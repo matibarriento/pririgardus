@@ -3,7 +3,9 @@ import os
 import logging
 import argparse
 from flask import (Flask)
-from models.models import db
+from flask.ext.admin import Admin
+from flask.ext.admin.contrib.sqla import ModelView
+from models.models import db, Pais, Provincia
 
 NOMBRE_BASE_DATOS = 'pririgardus.db'
 app = Flask(__name__)
@@ -14,6 +16,7 @@ app.config["BASE_DIR"] = os.path.dirname(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + NOMBRE_BASE_DATOS
 db.init_app(app)
 db.app = app
+admin = Admin(app)
 
 parser = argparse.ArgumentParser(description='Pririgardus Arguments Parser')
 parser.add_argument('-l', '--logging', help='logging', action='store_true')
@@ -29,6 +32,8 @@ handler.setFormatter(formatter)
 if(argv.logging):
     logger.addHandler(handler)
 
+# admin.add_view(ModelView(Pais, db.session))
+# admin.add_view(ModelView(Provincia, db.session))
 
 if __name__ == "__main__":
     debugging = argv.debug
@@ -37,6 +42,8 @@ if __name__ == "__main__":
         app.run(host='0.0.0.0', port=port, debug=debugging)
     except OSError as ose:
         print(
-            "Port in use, select another using -p [port] but {0}".format(
+            "Puerto en uso,por favor selecione \
+            uno usando -p [port] excepto {0}".format(
                 argv.port))
-        print("Maybe you press Ctrl+Z to stop the server...only you know that")
+        print("Tal vez apreto Ctrl+Z para detener el servidor\
+              ...si no lo sabe usted xD")

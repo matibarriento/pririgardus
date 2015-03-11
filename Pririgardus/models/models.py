@@ -256,6 +256,7 @@ class Cargo(db.Model):
     __tablename__ = "Cargo"
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String(50))
+    #propiedad 'listas' para obtener sus hijas
 
     __mapper_args__ = {
         'polymorphic_identity': 'Cargo',
@@ -273,6 +274,7 @@ class Cargo_Local(Cargo):
     localidad_id = db.Column(db.Integer, db.ForeignKey('Localidad.id'))
     localidad = db.relationship('Localidad', backref=db.backref(
         'cargos', lazy='dynamic'))
+    #propiedad 'listas' para obtener sus hijas
 
     __mapper_args__ = {
         'polymorphic_identity': TipoCargo.Cargo_Local.name,
@@ -285,8 +287,57 @@ class Cargo_Local(Cargo):
 
     def __repr__(self):
         return str.upper(self.descripcion + ' - ' + self.localidad.descripcion)
+
+
+class Cargo_Departamental(Cargo):
+
+    """docstring for Cargo_Departamental"""
+
+    __tablename__ = TipoCargo.Cargo_Departamental.name
+    id = db.Column(db.Integer, db.ForeignKey('Cargo.id'), primary_key=True)
+    descripcion = db.Column(db.String(50))
+    departamento_id = db.Column(db.Integer, db.ForeignKey('Departamento.id'))
+    departamento = db.relationship('Departamento', backref=db.backref(
+        'cargos', lazy='dynamic'))
+    #propiedad 'listas' para obtener sus hijas
+
+    __mapper_args__ = {
+        'polymorphic_identity': TipoCargo.Cargo_Departamental.name,
+    }
+
+    def __init__(self, descripcion='', departamento=''):
+        self.descripcion = descripcion
+        self.departamento = departamento
+
+    def __repr__(self):
+        return str.upper(self.descripcion +
+                         ' - ' + self.departamento.descripcion)
+
+
+class Cargo_Provincial(Cargo):
+
+    """docstring for Cargo_Provincial"""
+
+    __tablename__ = TipoCargo.Cargo_Provincial.name
+    id = db.Column(db.Integer, db.ForeignKey('Cargo.id'), primary_key=True)
+    descripcion = db.Column(db.String(50))
+    provincia_id = db.Column(db.Integer, db.ForeignKey('Provincia.id'))
+    provincia = db.relationship('Provincia', backref=db.backref(
+        'cargos', lazy='dynamic'))
+    #propiedad 'listas' para obtener sus hijas
+
+    __mapper_args__ = {
+        'polymorphic_identity': TipoCargo.Cargo_Provincial.name,
+    }
+
+    def __init__(self, descripcion='', provincia=''):
+        self.descripcion = descripcion
+        self.provincia = provincia
+
+    def __repr__(self):
+        return str.upper(self.descripcion + ' - ' + self.provincia.descripcion)
 ####TODO
-######## CARGOS_DEPARTAMENTALES, CARGOS_PROVINCIALES, CARGOS_NACIONALES
+######## CARGOS_NACIONALES
 
 
 class PlanillaMesa(db.Model):
