@@ -2,21 +2,21 @@
 import os
 import logging
 import argparse
-from flask import (Flask)
-from flask.ext.admin import Admin
-from flask.ext.admin.contrib.sqla import ModelView
-from models.models import db, Pais, Provincia
+from flask import (Flask, render_template, jsonify)
+#from flask.ext.admin import Admin
+from models.models import db, Mesa
+from models.views import DatosMesa
 
 NOMBRE_BASE_DATOS = 'pririgardus.db'
 app = Flask(__name__)
 app.config["STATIC_URL"] = '/static/'
 app.config["STATIC_ROOT"] = '/static/'
 app.config["BASE_DIR"] = os.path.dirname(os.path.dirname(__file__))
-
+app.config["SECRET_KEY"] = "pririgardus-elektoj"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + NOMBRE_BASE_DATOS
 db.init_app(app)
 db.app = app
-admin = Admin(app)
+#admin = Admin(app)
 
 parser = argparse.ArgumentParser(description='Pririgardus Arguments Parser')
 parser.add_argument('-l', '--logging', help='logging', action='store_true')
@@ -31,12 +31,39 @@ formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
 if(argv.logging):
     logger.addHandler(handler)
-
+app.config['LOGGER_NAME'] = logger.name
 # admin.add_view(ModelView(Pais, db.session))
 # admin.add_view(ModelView(Provincia, db.session))
 
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+
+@app.route("/getMesas")
+def getMesas():
+    return jsonify([
+        (str(num.numero), str(num.numero)) for num in Mesa.query.all()])
+
+
+@app.route("/getdatosMesa/<numero_mesa>")
+def getdatosMesa(numero_mesa):
+    mesa = db.session.query(Mesa).filter(Mesa.numero == numero_mesa).first()
+    escuela = mesa.escuela
+    circuito = escuela.circuito
+    cargos = [cargo for cargo in mesa.getCargos()]
+    datosMesa = DatosMesa(
+        mesa.numero, circuito, escuela.descripcion, cargos)
+    return render_template("helpers/_datosMesa.html", datosMesa=datosMesa)
+
+
+@app.route("/llenarPlanilla/<numero_mesa>/<cargo>")
+def llenarPlanilla(numero_mesa, cargo):
+    pass
+
 if __name__ == "__main__":
-    debugging = argv.debug
+    debugging = True
     port = int(os.environ.get("PORT", argv.port))
     try:
         app.run(host='0.0.0.0', port=port, debug=debugging)

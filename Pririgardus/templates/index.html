@@ -1,0 +1,27 @@
+{% extends "_layout.html" %}
+{% block body %}
+<input id="numero_mesa" type="text">
+<script type="text/javascript">
+    var mesas;
+    $(function() {
+        $.ajax({
+            url: '{{url_for("getMesas")}}',
+            dataType: "json",
+            success: function(data) {
+                mesas = $.map(data, function(item) {
+                    return {
+                        value: item,
+                        label: item
+
+                    };
+                });
+                $("#numero_mesa").autocomplete({
+                    source: mesas,
+                    minLength:0,
+                });
+            }
+        });
+    });
+</script>
+
+{% endblock %}

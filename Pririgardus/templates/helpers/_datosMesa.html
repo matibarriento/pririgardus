@@ -1,0 +1,19 @@
+<table>
+    <tr>
+        {{datosMesa.mesa_numero}}
+    </tr>
+    <tr>
+        <td>{{datosMesa.circuito}}</td>
+        <td>{{datosMesa.escuela}}</td>
+    </tr>
+    <tr>
+        {% for cargo in datosMesa.cargos %}
+            <td>
+                <form method='link' action='{{url_for("llenarPlanilla",numero_mesa=datosMesa.mesa_numero, cargo=cargo.id)}}'>
+                    <input type="submit" value="{{cargo.tipo_cargo}} ">
+                </form>
+                
+            </td>
+        {% endfor %}
+    </tr>
+</table>

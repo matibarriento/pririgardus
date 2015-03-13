@@ -3,29 +3,70 @@ from models.models import *
 
 db.create_all()
 
+db.session.add(
+    TipoCargo(
+        descripcion='Presidencia',
+        alcance_cargo=AlcanceCargo.Cargo_Nacional.name))
+db.session.add(
+    TipoCargo(
+        descripcion='Diputado Nacional',
+        alcance_cargo=AlcanceCargo.Cargo_Nacional.name))
+db.session.add(
+    TipoCargo(
+        descripcion='Senado Provincial',
+        alcance_cargo=AlcanceCargo.Cargo_Provincial.name))
+db.session.add(
+    TipoCargo(
+        descripcion='Gobernación Provincial',
+        alcance_cargo=AlcanceCargo.Cargo_Provincial.name))
+db.session.add(
+    TipoCargo(
+        descripcion='Diputado Provincial',
+        alcance_cargo=AlcanceCargo.Cargo_Provincial.name))
+db.session.add(
+    TipoCargo(
+        descripcion='Senado Departamental',
+        alcance_cargo=AlcanceCargo.Cargo_Departamental.name))
+db.session.add(
+    TipoCargo(
+        descripcion='Intendencia',
+        alcance_cargo=AlcanceCargo.Cargo_Local.name))
+db.session.add(
+    TipoCargo(
+        descripcion='Consejo',
+        alcance_cargo=AlcanceCargo.Cargo_Local.name))
+
 pais_arg = Pais(descripcion='Argentina')
 prov_sta = Provincia(descripcion='Santa Fe', pais=pais_arg)
 dep_ros = Departamento(descripcion='Rosario', provincia=prov_sta)
 loc_ros = Localidad(descripcion='Rosario', departamento=dep_ros)
-secc_15 = Seccional(numero='15', localidad=loc_ros)
-cir_15 = Circuito(descripcion='Circuito', seccional=secc_15)
-esc_para = Escuela(descripcion='Rep del Paraguay', circuito=cir_15)
-mesa_1 = Mesa(numero=1, descripcion='', escuela=esc_para)
-mesa_2 = Mesa(numero=2, descripcion='', escuela=esc_para)
-mesa_3 = Mesa(numero=3, descripcion='', escuela=esc_para)
 
+db.session.add_all([pais_arg, prov_sta, dep_ros, loc_ros])
 
-db.session.add(pais_arg)
-db.session.add(prov_sta)
-db.session.add(dep_ros)
-db.session.add(loc_ros)
-db.session.add(loc_ros)
+mesanum = 6000
+esccir = [['Rep Paraguay', 'Malvinas', 'Normal 1'], ['Normal 3', 'Moreno']]
+for secnum in range(1, 22):
+    secc = Seccional(numero=str(secnum), localidad=loc_ros)
+    db.session.add(secc)
+    for cirnum in range(1, 2):
+        circ = Circuito(descripcion='Circuito ' + str(cirnum), seccional=secc)
+        db.session.add(circ)
+        for escnom in esccir[cirnum - 1]:
+            esc = Escuela(descripcion=escnom, circuito=circ)
+            db.session.add(esc)
+            for i in range(1, 3):
+                mesa = Mesa(numero=mesanum, escuela=esc)
+                mesanum += 1
+                db.session.add(mesa)
 
-db.session.add(secc_15)
-db.session.add(cir_15)
-db.session.add(esc_para)
-db.session.add(mesa_1)
-db.session.add(mesa_2)
-db.session.add(mesa_3)
+tipocargos = TipoCargo.query.all()
+con = tipocargos[7]
+cl = Cargo_Local(loc_ros, con)
+db.session.add(cl)
+fren = Frente('FPCYS')
+db.session.add(fren)
+lis = Lista('Por los barrios', fren, cl)
+db.session.add(lis)
+db.session.commit()
 
 db.session.commit()

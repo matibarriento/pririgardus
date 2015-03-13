@@ -122,7 +122,8 @@ class Seccional(db.Model):
         self.localidad = localidad
 
     def __repr__(self):
-        return str.upper('Seccional Nro ' + self.numero)
+        return str.upper(
+            'Seccional Nro {0} - {1}'.format(self.numero, self.localidad))
 
     def getMesas(self):
         mesas = []
@@ -148,7 +149,8 @@ class Circuito(db.Model):
         self.seccional = seccional
 
     def __repr__(self):
-        return str.upper(self.descripcion)
+        return str.upper(
+            'Circuito {0} - {1}'.format(self.descripcion, self.seccional))
 
     def getMesas(self):
         mesas = []
@@ -163,7 +165,7 @@ class Escuela(db.Model):
 
     __tablename__ = "Escuela"
     id = db.Column(db.Integer, primary_key=True)
-    descripcion = db.Column(db.String(20), unique=True)
+    descripcion = db.Column(db.String(20))
     circuito_id = db.Column(db.Integer, db.ForeignKey('Circuito.id'))
     circuito = db.relationship('Circuito', backref=db.backref(
         'escuelas', lazy='dynamic'))
@@ -174,7 +176,9 @@ class Escuela(db.Model):
         self.circuito = circuito
 
     def __repr__(self):
-        return str.upper(self.descripcion)
+        return str.upper('Escuela {0} - {1}'.format(
+                         self.descripcion,
+                         self.circuito.seccional.localidad.descripcion))
 
     def getMesas(self):
         return self.mesas.all()
@@ -186,28 +190,70 @@ class Mesa(db.Model):
 
     __tablename__ = "Mesa"
     numero = db.Column(db.Integer, primary_key=True)
-    descripcion = db.Column(db.String(20))
     escuela_id = db.Column(db.Integer, db.ForeignKey('Escuela.id'))
     escuela = db.relationship('Escuela', backref=db.backref(
         'mesas', lazy='dynamic'))
+    #propiedad 'planillas' para obtener sus hijas
 
-    def __init__(self, numero='', descripcion='', escuela=''):
+    def __init__(self, numero='', escuela=''):
         self.numero = numero
-        self.descripcion = descripcion
         self.escuela = escuela
+        self.Actualizar_Planillas()
 
     def __repr__(self):
-        return str.upper('Mesa Nro: ' + str(self.numero))
+        return str(self.numero)
+
+    def Actualizar_Planillas(self):
+        cargos = self.getCargos()
+        if(len(cargos) > 0):
+            for cargo in cargos:
+                planilla = db.session.query(
+                    PlanillaMesa).filter(
+                    PlanillaMesa.mesa == self,
+                    PlanillaMesa.cargo == cargo).first()
+                if not planilla:
+                    db.session.add(PlanillaMesa(mesa=self, cargo=cargo))
+            db.session.commit()
+
+    def getCargos(self):
+        cargos = []
+        localidad = self.escuela.circuito.seccional.localidad
+        for lugar in [localidad,
+                      localidad.departamento,
+                      localidad.departamento.provincia,
+                      localidad.departamento.provincia.pais]:
+            cargos.extend(lugar.cargos)
+        return cargos
 
 
-class TipoCargo(Enum):
+class AlcanceCargo(Enum):
 
-    """docstring for TipoCargo"""
+    """docstring for AlcanceCargo"""
 
     Cargo_Local = 1
     Cargo_Departamental = 2
     Cargo_Provincial = 3
     Cargo_Nacional = 4
+
+
+class TipoCargo(db.Model):
+
+    """docstring for TipoCargo"""
+
+    __tablename__ = "TipoCargo"
+    id = db.Column(db.Integer, primary_key=True)
+    alcance_cargo = db.Column(db.String(50))
+    descripcion = db.Column(db.String(50))
+
+    def __init__(self, descripcion='', alcance_cargo=''):
+        self.descripcion = descripcion
+        try:
+            self.alcance_cargo = AlcanceCargo[alcance_cargo].name
+        except KeyError:
+            raise Exception
+
+    def __repr__(self):
+        return str.upper(self.descripcion)
 
 
 class Frente(db.Model):
@@ -239,6 +285,7 @@ class Lista(db.Model):
     cargo_id = db.Column(db.Integer, db.ForeignKey('Cargo.id'))
     cargo = db.relationship('Cargo', backref=db.backref(
         'listas', lazy='dynamic'))
+    #propidad 'votos' para obtener sus hijos
 
     def __init__(self, descripcion='', frente='', cargo=''):
         self.descripcion = descripcion
@@ -248,6 +295,28 @@ class Lista(db.Model):
     def __repr__(self):
         return str.upper(self.frente.descripcion + ' - ' + self.descripcion)
 
+    def Actualizar_VotoLista(self):
+        mesas = self.cargo.alcance.getMesas()
+        planillas = []
+        if(len(mesas) > 0):
+            for mesa in mesas:
+                planilla = db.session.query(
+                    PlanillaMesa).filter(
+                    PlanillaMesa.mesa == mesa,
+                    PlanillaMesa.cargo == self.cargo).first()
+                if planilla:
+                    planillas.extend(planilla)
+            if(len(planillas) > 0):
+                for planilla in planillas:
+                    votolista = db.session.query(
+                        VotoListaMesa).filter(
+                        VotoListaMesa.planilla_mesa == planilla,
+                        VotoListaMesa.lista == self)
+                    if not votolista:
+                        db.session.add(
+                            VotoListaMesa(planilla=planilla, lista=self))
+                db.session.commit()
+
 
 class Cargo(db.Model):
 
@@ -256,88 +325,178 @@ class Cargo(db.Model):
     __tablename__ = "Cargo"
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String(50))
+    tipo_cargo_id = db.Column(db.Integer, db.ForeignKey('TipoCargo.id'))
+    tipo_cargo = db.relationship('TipoCargo', backref=db.backref(
+        'cargos', lazy='dynamic'))
     #propiedad 'listas' para obtener sus hijas
+    #propiedad 'planillas' para obtener sus hijas
 
     __mapper_args__ = {
         'polymorphic_identity': 'Cargo',
         'polymorphic_on': type
     }
 
+    def __init__(self, tipo_cargo=''):
+        self.tipo_cargo = tipo_cargo
+
 
 class Cargo_Local(Cargo):
 
     """docstring for Cargo_Local"""
 
-    __tablename__ = TipoCargo.Cargo_Local.name
+    __tablename__ = AlcanceCargo.Cargo_Local.name
     id = db.Column(db.Integer, db.ForeignKey('Cargo.id'), primary_key=True)
-    descripcion = db.Column(db.String(50))
-    localidad_id = db.Column(db.Integer, db.ForeignKey('Localidad.id'))
-    localidad = db.relationship('Localidad', backref=db.backref(
+    descripcion = db.Column(db.String(100))
+    alcance_id = db.Column(db.Integer, db.ForeignKey('Localidad.id'))
+    alcance = db.relationship('Localidad', backref=db.backref(
         'cargos', lazy='dynamic'))
     #propiedad 'listas' para obtener sus hijas
 
     __mapper_args__ = {
-        'polymorphic_identity': TipoCargo.Cargo_Local.name,
+        'polymorphic_identity': AlcanceCargo.Cargo_Local.name,
     }
 
-    def __init__(self, descripcion='', localidad=''):
-        super(Cargo_Local, self).__init__()
-        self.descripcion = descripcion
-        self.localidad = localidad
+    def __init__(self, localidad='', tipo_cargo=''):
+        super(Cargo_Local, self).__init__(tipo_cargo)
+        self.alcance = localidad
+        self.descripcion = str.upper(self.tipo_cargo.descripcion
+                                     + ' - ' + self.alcance.descripcion)
+        self.Actualizar_Planillas()
 
     def __repr__(self):
-        return str.upper(self.descripcion + ' - ' + self.localidad.descripcion)
+        return self.descripcion
+
+    def Actualizar_Planillas(self):
+        #planillas = []
+        mesas = self.alcance.getMesas()
+        if(len(mesas) > 0):
+            for mesa in mesas:
+                planilla = db.session.query(
+                    PlanillaMesa).filter(
+                    PlanillaMesa.mesa == mesa,
+                    PlanillaMesa.cargo == self).first()
+                if not planilla:
+                    db.session.add(PlanillaMesa(mesa=mesa, cargo=self))
+            db.session.commit()
 
 
 class Cargo_Departamental(Cargo):
 
     """docstring for Cargo_Departamental"""
 
-    __tablename__ = TipoCargo.Cargo_Departamental.name
+    __tablename__ = AlcanceCargo.Cargo_Departamental.name
     id = db.Column(db.Integer, db.ForeignKey('Cargo.id'), primary_key=True)
-    descripcion = db.Column(db.String(50))
-    departamento_id = db.Column(db.Integer, db.ForeignKey('Departamento.id'))
-    departamento = db.relationship('Departamento', backref=db.backref(
+    descripcion = db.Column(db.String(100))
+    alcance_id = db.Column(db.Integer, db.ForeignKey('Departamento.id'))
+    alcance = db.relationship('Departamento', backref=db.backref(
         'cargos', lazy='dynamic'))
     #propiedad 'listas' para obtener sus hijas
 
     __mapper_args__ = {
-        'polymorphic_identity': TipoCargo.Cargo_Departamental.name,
+        'polymorphic_identity': AlcanceCargo.Cargo_Departamental.name,
     }
 
-    def __init__(self, descripcion='', departamento=''):
-        self.descripcion = descripcion
-        self.departamento = departamento
+    def __init__(self, departamento='', tipo_cargo=''):
+        super(Cargo_Departamental, self).__init__(tipo_cargo)
+        self.alcance = departamento
+        self.descripcion = str.upper(self.tipo_cargo.descripcion
+                                     + ' - ' + self.alcance.descripcion)
+        self.Actualizar_Planillas()
 
     def __repr__(self):
-        return str.upper(self.descripcion +
-                         ' - ' + self.departamento.descripcion)
+        return self.descripcion
+
+    def Actualizar_Planillas(self):
+        #planillas = []
+        mesas = self.alcance.getMesas()
+        if(len(mesas) > 0):
+            for mesa in mesas:
+                planilla = db.session.query(
+                    PlanillaMesa).filter(
+                    PlanillaMesa.mesa == mesa,
+                    PlanillaMesa.cargo == self).first()
+                if not planilla:
+                    db.session.add(PlanillaMesa(mesa=mesa, cargo=self))
+            db.session.commit()
 
 
 class Cargo_Provincial(Cargo):
 
     """docstring for Cargo_Provincial"""
 
-    __tablename__ = TipoCargo.Cargo_Provincial.name
+    __tablename__ = AlcanceCargo.Cargo_Provincial.name
     id = db.Column(db.Integer, db.ForeignKey('Cargo.id'), primary_key=True)
-    descripcion = db.Column(db.String(50))
-    provincia_id = db.Column(db.Integer, db.ForeignKey('Provincia.id'))
-    provincia = db.relationship('Provincia', backref=db.backref(
+    descripcion = db.Column(db.String(100))
+    alcance_id = db.Column(db.Integer, db.ForeignKey('Provincia.id'))
+    alcance = db.relationship('Provincia', backref=db.backref(
         'cargos', lazy='dynamic'))
     #propiedad 'listas' para obtener sus hijas
 
     __mapper_args__ = {
-        'polymorphic_identity': TipoCargo.Cargo_Provincial.name,
+        'polymorphic_identity': AlcanceCargo.Cargo_Provincial.name,
     }
 
-    def __init__(self, descripcion='', provincia=''):
-        self.descripcion = descripcion
-        self.provincia = provincia
+    def __init__(self, provincia='', tipo_cargo=''):
+        super(Cargo_Provincial, self).__init__(tipo_cargo)
+        self.alcance = provincia
+        self.descripcion = str.upper(self.tipo_cargo.descripcion
+                                     + ' - ' + self.alcance.descripcion)
+        self.Actualizar_Planillas()
 
     def __repr__(self):
-        return str.upper(self.descripcion + ' - ' + self.provincia.descripcion)
-####TODO
-######## CARGOS_NACIONALES
+        return self.descripcion
+
+    def Actualizar_Planillas(self):
+        mesas = self.alcance.getMesas()
+        if(len(mesas) > 0):
+            for mesa in mesas:
+                planilla = db.session.query(
+                    PlanillaMesa).filter(
+                    PlanillaMesa.mesa == mesa,
+                    PlanillaMesa.cargo == self).first()
+                if not planilla:
+                    db.session.add(PlanillaMesa(mesa=mesa, cargo=self))
+            db.session.commit()
+
+
+class Cargo_Nacional(Cargo):
+
+    """docstring for Cargo_Nacional"""
+
+    __tablename__ = AlcanceCargo.Cargo_Nacional.name
+    id = db.Column(db.Integer, db.ForeignKey('Cargo.id'), primary_key=True)
+    descripcion = db.Column(db.String(100))
+    alcance_id = db.Column(db.Integer, db.ForeignKey('Pais.id'))
+    alcance = db.relationship('Pais', backref=db.backref(
+        'cargos', lazy='dynamic'))
+    #propiedad 'listas' para obtener sus hijas
+
+    __mapper_args__ = {
+        'polymorphic_identity': AlcanceCargo.Cargo_Nacional.name,
+    }
+
+    def __init__(self, pais='', tipo_cargo=''):
+        super(Cargo_Nacional, self).__init__(tipo_cargo)
+        self.alcance = pais
+        self.descripcion = str.upper(self.tipo_cargo.descripcion
+                                     + ' - ' + self.alcance.descripcion)
+        self.Actualizar_Planillas()
+
+    def __repr__(self):
+        return self.descripcion
+
+    def Actualizar_Planillas(self):
+        #planillas = []
+        mesas = self.alcance.getMesas()
+        if(len(mesas) > 0):
+            for mesa in mesas:
+                planilla = db.session.query(
+                    PlanillaMesa).filter(
+                    PlanillaMesa.mesa == mesa,
+                    PlanillaMesa.cargo == self).first()
+                if not planilla:
+                    db.session.add(PlanillaMesa(mesa=mesa, cargo=self))
+            db.session.commit()
 
 
 class PlanillaMesa(db.Model):
@@ -346,22 +505,36 @@ class PlanillaMesa(db.Model):
 
     __tablename__ = "PlanillaMesa"
     id = db.Column(db.Integer, primary_key=True)
-    descripcion = db.Column(db.String(50))
     mesa_numero = db.Column(db.Integer, db.ForeignKey('Mesa.numero'))
     mesa = db.relationship('Mesa', backref=db.backref(
         'planillas', lazy='dynamic'))
     cargo_id = db.Column(db.Integer, db.ForeignKey('Cargo.id'))
     cargo = db.relationship('Cargo', backref=db.backref(
         'planillas', lazy='dynamic'))
+    #propiedad 'votos' para obtener sus hijas
 
-    def __init__(self, descripcion='', mesa='', cargo=''):
-        self.descripcion = descripcion
+    def __init__(self, mesa='', cargo=''):
         self.mesa = mesa
         self.cargo = cargo
+        self.Actualizar_VotoLista()
 
     def __repr__(self):
         return str.upper('Planilla de mesa ' +
-                         self.mesa.numero + ' - ' + self.cargo.descripcion)
+                         str(self.mesa.numero) +
+                         ' - ' + self.cargo.descripcion)
+
+    def Actualizar_VotoLista(self):
+        listas = self.cargo.listas.all()
+        if(len(listas) > 0):
+            for lista in listas:
+                votolista = db.session.query(
+                    VotoListaMesa).filter(
+                    VotoListaMesa.planilla_mesa == self).filter(
+                    VotoListaMesa.lista == lista).first()
+                if not votolista:
+                    db.session.add(
+                        VotoListaMesa(planilla=self, lista=lista))
+            db.session.commit()
 
 
 class VotoListaMesa(db.Model):
@@ -370,20 +543,19 @@ class VotoListaMesa(db.Model):
 
     __tablename__ = "VotoListaMesa"
     id = db.Column(db.Integer, primary_key=True)
-    descripcion = db.Column(db.String(50))
+    descripcion = db.Column(db.String(150))
     planilla_mesa_id = db.Column(
         db.Integer, db.ForeignKey('PlanillaMesa.id'))
     planilla_mesa = db.relationship('PlanillaMesa', backref=db.backref(
-        'listas', lazy='dynamic'))
+        'votos', lazy='dynamic'))
     lista_id = db.Column(db.Integer, db.ForeignKey('Lista.id'))
     lista = db.relationship('Lista', backref=db.backref(
         'votos', lazy='dynamic'))
 
-    def __init__(self, descripcion='', mesa='', cargo=''):
-        self.descripcion = descripcion
-        self.mesa = mesa
-        self.cargo = cargo
+    def __init__(self, planilla='', lista=''):
+        self.descripcion = 'Votos de {0}'.format(str.upper(self.lista))
+        self.planilla = planilla
+        self.lista = lista
 
     def __repr__(self):
-        return str.upper('Votos de mesa ' +
-                         self.mesa.numero + ': ' + self.descripcion)
+        return self.descripcion
