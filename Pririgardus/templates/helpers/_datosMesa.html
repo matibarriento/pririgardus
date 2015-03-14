@@ -6,12 +6,18 @@
         <td>{{datosMesa.circuito}}</td>
         <td>{{datosMesa.escuela}}</td>
     </tr>
+    </table>
+    <table>
     <tr>
-        {% for cargo in datosMesa.cargos %}
+        {% for planilla in datosMesa.planillas %}
             <td>
-                <form method='link' action='{{url_for("llenarPlanilla",numero_mesa=datosMesa.mesa_numero, cargo=cargo.id)}}'>
-                    <input type="submit" value="{{cargo.tipo_cargo}} ">
-                </form>
+                {% if planilla.habilitado %}
+                    <form method='link' action='{{url_for("llenarPlanilla",planilla_id=planilla.id)}}'>
+                        <input type="submit" value="{{planilla.texto}}" >
+                    </form>
+                {% else %}
+                    <input type="submit" value="{{planilla.texto}}" disabled="True" >
+                {% endif %}
                 
             </td>
         {% endfor %}

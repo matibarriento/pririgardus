@@ -33,7 +33,7 @@ db.session.add(
         alcance_cargo=AlcanceCargo.Cargo_Local.name))
 db.session.add(
     TipoCargo(
-        descripcion='Consejo',
+        descripcion='Concejo',
         alcance_cargo=AlcanceCargo.Cargo_Local.name))
 
 pais_arg = Pais(descripcion='Argentina')
@@ -66,7 +66,12 @@ db.session.add(cl)
 fren = Frente('FPCYS')
 db.session.add(fren)
 lis = Lista('Por los barrios', fren, cl)
-db.session.add(lis)
-db.session.commit()
-
+lis2 = Lista('Jirardi', fren, cl)
+db.session.add_all([lis, lis2])
+inten = tipocargos[6]
+ci = Cargo_Local(loc_ros, inten)
+db.session.add(inten)
+lis = Lista('Arriba Rosario', fren, ci)
+lis2 = Lista('Fein', fren, ci)
+db.session.add_all([lis, lis2])
 db.session.commit()

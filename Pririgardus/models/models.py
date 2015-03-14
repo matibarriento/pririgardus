@@ -505,6 +505,11 @@ class PlanillaMesa(db.Model):
 
     __tablename__ = "PlanillaMesa"
     id = db.Column(db.Integer, primary_key=True)
+    nulos = db.Column(db.Integer, nullable=True)
+    blancos = db.Column(db.Integer, nullable=True)
+    impugnados = db.Column(db.Integer, nullable=True)
+    total_votantes = db.Column(db.Integer, nullable=True)
+    escrutada = db.Column(db.Boolean, default=False)
     mesa_numero = db.Column(db.Integer, db.ForeignKey('Mesa.numero'))
     mesa = db.relationship('Mesa', backref=db.backref(
         'planillas', lazy='dynamic'))
@@ -543,7 +548,7 @@ class VotoListaMesa(db.Model):
 
     __tablename__ = "VotoListaMesa"
     id = db.Column(db.Integer, primary_key=True)
-    descripcion = db.Column(db.String(150))
+    votos = db.Column(db.Integer, nullable=True)
     planilla_mesa_id = db.Column(
         db.Integer, db.ForeignKey('PlanillaMesa.id'))
     planilla_mesa = db.relationship('PlanillaMesa', backref=db.backref(

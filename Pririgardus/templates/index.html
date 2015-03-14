@@ -1,27 +1,62 @@
 {% extends "_layout.html" %}
 {% block body %}
-<input id="numero_mesa" type="text">
+<table>
+    <tr>
+        <td><input id="numero_mesa" type="text"></td>
+        <td><div id="datosMesa"></div></td>
+    </tr>
+
+</table>
+
+
 <script type="text/javascript">
     var mesas;
     $(function() {
-        $.ajax({
-            url: '{{url_for("getMesas")}}',
-            dataType: "json",
-            success: function(data) {
-                mesas = $.map(data, function(item) {
-                    return {
-                        value: item,
-                        label: item
-
-                    };
+        $("#numero_mesa").autocomplete({
+            source: function (request, response) {
+                $.getJSON('{{url_for("getMesas")}}', function (data) {
+                    response($.map(data, function (value, key) {
+                        if( value.startsWith(request.term)){
+                            return {
+                                label: value,
+                                value: key
+                            };
+                        }
+                        else{
+                            return null;
+                        }
+                    }));
                 });
-                $("#numero_mesa").autocomplete({
-                    source: mesas,
-                    minLength:0,
-                });
-            }
+            },
+            minLength:2,
+            change: function (event, ui) {
+                if (ui.item) {
+                    $("#numero_mesa").val(ui.item.label);
+                    getDatosMesa(ui.item.value)
+                    return false;
+                }
+                else {
+                    $("#numero_mesa").val('');
+                    $('#datosMesa').empty();
+                }
+                $(this).trigger("change");
+            },
+            select: function (event, ui) {
+                $("#numero_mesa").val(ui.item.label);
+                getDatosMesa(ui.item.value)
+                $(this).trigger("change");
+                return false;
+            },
+            focus: function (event, ui) {
+                $("#numero_mesa").val(ui.item.label);
+                getDatosMesa(ui.item.value)
+                return false;
+            },
         });
     });
+    function getDatosMesa(numero_mesa) {
+        $('#datosMesa').load('getDatosMesa/' + numero_mesa);
+    }
 </script>
 
 {% endblock %}

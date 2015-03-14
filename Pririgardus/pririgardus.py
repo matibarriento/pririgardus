@@ -47,19 +47,15 @@ def getMesas():
         (str(num.numero), str(num.numero)) for num in Mesa.query.all()])
 
 
-@app.route("/getdatosMesa/<numero_mesa>")
-def getdatosMesa(numero_mesa):
+@app.route("/getDatosMesa/<numero_mesa>")
+def getDatosMesa(numero_mesa):
     mesa = db.session.query(Mesa).filter(Mesa.numero == numero_mesa).first()
-    escuela = mesa.escuela
-    circuito = escuela.circuito
-    cargos = [cargo for cargo in mesa.getCargos()]
-    datosMesa = DatosMesa(
-        mesa.numero, circuito, escuela.descripcion, cargos)
+    datosMesa = DatosMesa(mesa)
     return render_template("helpers/_datosMesa.html", datosMesa=datosMesa)
 
 
-@app.route("/llenarPlanilla/<numero_mesa>/<cargo>")
-def llenarPlanilla(numero_mesa, cargo):
+@app.route("/llenarPlanilla/<planilla_id>")
+def llenarPlanilla(planilla_id):
     pass
 
 if __name__ == "__main__":
