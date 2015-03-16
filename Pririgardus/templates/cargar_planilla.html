@@ -1,0 +1,31 @@
+{% extends "_layout.html" %}
+{% block body %}
+
+{% from "helpers/_formHelpers.html" import render_field %}
+<table>
+    <tr>
+        <td>{{form.mesa_numero}}</td>
+    </tr>
+    <tr>
+        <td>{{form.titulo}}</td>
+    </tr>
+    <tr>
+        <td>{{form.cargo}}</td>
+    </tr>
+</table>
+<form method=post action='{{url_for("llenarPlanilla",planilla_id=form.planilla_id)}}'>
+    {{form.planilla_id}}
+    <table>
+        {% for voto in form.votos_listas %}
+            <tr>{{ render_field(voto.voto)}}</tr>
+            
+        {% endfor %}
+        <tr>{{ render_field(form.nulos) }}</tr>
+        <tr>{{ render_field(form.blancos) }}</tr>
+        <tr>{{ render_field(form.impugnados) }}</tr>
+        <tr>{{ render_field(form.total_votantes) }}</tr>
+
+    </table>
+    <p><input type=submit value="Escrutar">
+</form>
+{% endblock %}

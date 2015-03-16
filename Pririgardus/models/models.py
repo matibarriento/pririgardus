@@ -291,6 +291,7 @@ class Lista(db.Model):
         self.descripcion = descripcion
         self.frente = frente
         self.cargo = cargo
+        self.Actualizar_VotoLista()
 
     def __repr__(self):
         return str.upper(self.frente.descripcion + ' - ' + self.descripcion)
@@ -305,13 +306,13 @@ class Lista(db.Model):
                     PlanillaMesa.mesa == mesa,
                     PlanillaMesa.cargo == self.cargo).first()
                 if planilla:
-                    planillas.extend(planilla)
+                    planillas.append(planilla)
             if(len(planillas) > 0):
                 for planilla in planillas:
                     votolista = db.session.query(
                         VotoListaMesa).filter(
                         VotoListaMesa.planilla_mesa == planilla,
-                        VotoListaMesa.lista == self)
+                        VotoListaMesa.lista == self).first()
                     if not votolista:
                         db.session.add(
                             VotoListaMesa(planilla=planilla, lista=self))
@@ -549,6 +550,7 @@ class VotoListaMesa(db.Model):
     __tablename__ = "VotoListaMesa"
     id = db.Column(db.Integer, primary_key=True)
     votos = db.Column(db.Integer, nullable=True)
+    descripcion = db.Column(db.String(100))
     planilla_mesa_id = db.Column(
         db.Integer, db.ForeignKey('PlanillaMesa.id'))
     planilla_mesa = db.relationship('PlanillaMesa', backref=db.backref(
@@ -558,9 +560,9 @@ class VotoListaMesa(db.Model):
         'votos', lazy='dynamic'))
 
     def __init__(self, planilla='', lista=''):
-        self.descripcion = 'Votos de {0}'.format(str.upper(self.lista))
-        self.planilla = planilla
+        self.descripcion = repr(lista)
+        self.planilla_mesa = planilla
         self.lista = lista
 
     def __repr__(self):
-        return self.descripcion
+        return str.upper('Votos de {0}'.format(self.descripcion))

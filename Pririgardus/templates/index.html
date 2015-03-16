@@ -2,7 +2,7 @@
 {% block body %}
 <table>
     <tr>
-        <td><input id="numero_mesa" type="text"></td>
+        <td><input id="numero_mesa" type="text" tabindex="1"></td>
         <td><div id="datosMesa"></div></td>
     </tr>
 
@@ -12,6 +12,7 @@
 <script type="text/javascript">
     var mesas;
     $(function() {
+        $("#numero_mesa").val('')
         $("#numero_mesa").autocomplete({
             source: function (request, response) {
                 $.getJSON('{{url_for("getMesas")}}', function (data) {

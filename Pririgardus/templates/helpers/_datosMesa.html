@@ -3,8 +3,8 @@
         {{datosMesa.mesa_numero}}
     </tr>
     <tr>
-        <td>{{datosMesa.circuito}}</td>
         <td>{{datosMesa.escuela}}</td>
+        <td>{{datosMesa.circuito}}</td>
     </tr>
     </table>
     <table>
@@ -16,7 +16,7 @@
                         <input type="submit" value="{{planilla.texto}}" >
                     </form>
                 {% else %}
-                    <input type="submit" value="{{planilla.texto}}" disabled="True" >
+                    <input type="submit" value="{{planilla.texto}}" disabled="True" title="{{planilla.texto}} ya fue escrutada" >
                 {% endif %}
                 
             </td>

@@ -2,10 +2,10 @@
 import os
 import logging
 import argparse
-from flask import (Flask, render_template, jsonify)
+from flask import (Flask, render_template, jsonify, request)
 #from flask.ext.admin import Admin
-from models.models import db, Mesa
-from models.views import DatosMesa
+from models.models import db, Mesa, PlanillaMesa
+from models.views import DatosMesa, Planilla
 
 NOMBRE_BASE_DATOS = 'pririgardus.db'
 app = Flask(__name__)
@@ -54,9 +54,15 @@ def getDatosMesa(numero_mesa):
     return render_template("helpers/_datosMesa.html", datosMesa=datosMesa)
 
 
-@app.route("/llenarPlanilla/<planilla_id>")
+@app.route("/llenarPlanilla/<planilla_id>", methods=['GET', 'POST'])
 def llenarPlanilla(planilla_id):
-    pass
+    if request.method == 'GET':
+        planilla = db.session.query(PlanillaMesa).filter(
+            PlanillaMesa.id == planilla_id).first()
+        form = Planilla(planilla)
+        return render_template("cargar_planilla.html", form=form)
+    if request.method == 'POST':
+        return index()
 
 if __name__ == "__main__":
     debugging = True
