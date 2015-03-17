@@ -12,7 +12,7 @@
         {% for planilla in datosMesa.planillas %}
             <td>
                 {% if planilla.habilitado %}
-                    <form method='link' action='{{url_for("llenarPlanilla",planilla_id=planilla.id)}}'>
+                    <form method='link' action='{{url_for("Planilla",planilla_id=planilla.id)}}'>
                         <input type="submit" value="{{planilla.texto}}" >
                     </form>
                 {% else %}

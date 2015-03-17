@@ -1,6 +1,7 @@
 #models.view.py
 from wtforms import (Form, IntegerField, FieldList, FormField, HiddenField)
 #from wtforms.validators import InputRequired, NumberRange
+from models.constantes import VOTO_NAME_PREFIX
 
 
 class AttrDict(dict):
@@ -41,15 +42,15 @@ class VotoLista(Form):
 
     def __init__(self, votolista):
         super(VotoLista, self).__init__(obj=votolista)
-        self.voto.name = "voto-" + str(votolista.lista_id)
+        self.voto.name = VOTO_NAME_PREFIX + str(votolista.id)
         self.voto.label = votolista.lista.descripcion
-        self.voto.DatosMesa = votolista.votos if (
+        self.voto.data = votolista.votos if (
             votolista.votos is not None) else 0
 
 
-class Planilla(Form):
+class CargarPlanilla(Form):
 
-    """docstring for Planilla"""
+    """docstring for CargarPlanilla"""
     planilla_id = HiddenField()
     nulos = IntegerField(label="Votos Nulos", default=0)
     blancos = IntegerField(label="Votos Blancos", default=0)
@@ -59,7 +60,7 @@ class Planilla(Form):
         FormField(VotoLista, default=lambda: AttrDict(voto='')))
 
     def __init__(self, planilla):
-        super(Planilla, self).__init__(obj=planilla)
+        super(CargarPlanilla, self).__init__(obj=planilla)
         self.planilla_id.data = planilla.id
         self.mesa_numero = planilla.mesa.numero
         self.titulo = "{0} {1}".format(
@@ -76,7 +77,4 @@ class Planilla(Form):
         self.total_votantes.data = planilla.total_votantes if (
             planilla.total_votantes is not None) else 0
         for votolista in planilla.votos.all():
-            # self.votos_listas.append_entry(VotoLista(votolista))
             self.votos_listas.entries.append(VotoLista(votolista))
-        # self.votos_listas.entries = [
-        #     VotoLista(votolista) for votolista in planilla.votos.all()]

@@ -2,10 +2,11 @@
 import os
 import logging
 import argparse
-from flask import (Flask, render_template, jsonify, request)
+from flask import (Flask, render_template, jsonify, request, url_for)
 #from flask.ext.admin import Admin
+from logica import parsearPlanilla
 from models.models import db, Mesa, PlanillaMesa
-from models.views import DatosMesa, Planilla
+from models.views import DatosMesa, CargarPlanilla
 
 NOMBRE_BASE_DATOS = 'pririgardus.db'
 app = Flask(__name__)
@@ -54,15 +55,20 @@ def getDatosMesa(numero_mesa):
     return render_template("helpers/_datosMesa.html", datosMesa=datosMesa)
 
 
-@app.route("/llenarPlanilla/<planilla_id>", methods=['GET', 'POST'])
-def llenarPlanilla(planilla_id):
-    if request.method == 'GET':
+@app.route("/Planilla/<planilla_id>", methods=['GET', 'POST'])
+def Planilla(planilla_id):
+    if request.method in ('GET', None):
         planilla = db.session.query(PlanillaMesa).filter(
             PlanillaMesa.id == planilla_id).first()
-        form = Planilla(planilla)
+        form = CargarPlanilla(planilla)
         return render_template("cargar_planilla.html", form=form)
     if request.method == 'POST':
-        return index()
+        try:
+            parsearPlanilla(planilla_id, request.form)
+            return index()
+        except Exception as e:
+            logger.log(logging.ERROR, e)
+    return url_for("index")
 
 if __name__ == "__main__":
     debugging = True

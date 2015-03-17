@@ -13,7 +13,7 @@
         <td>{{form.cargo}}</td>
     </tr>
 </table>
-<form method=post action='{{url_for("llenarPlanilla",planilla_id=form.planilla_id)}}'>
+<form method=post action='{{url_for("Planilla",planilla_id=form.planilla_id.data)}}'>
     {{form.planilla_id}}
     <table>
         {% for voto in form.votos_listas %}
