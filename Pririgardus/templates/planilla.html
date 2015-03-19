@@ -1,6 +1,8 @@
 {% extends "_layout.html" %}
 {% block body %}
-
+<script type="text/javascript">
+    var urlPlanilla = '{{url_for("Planilla",planilla_id=form.planilla_id.data)}}';
+</script>
 {% from "helpers/_formHelpers.html" import render_field %}
 <table>
     <tr>
@@ -13,7 +15,8 @@
         <td>{{form.cargo}}</td>
     </tr>
 </table>
-<form method=post action='{{url_for("Planilla",planilla_id=form.planilla_id.data)}}'>
+<!-- '{{url_for("Planilla",planilla_id=form.planilla_id.data)}}' -->
+<form method=post action='/'>
     {{form.planilla_id}}
     <table>
         {% for voto in form.votos_listas %}
@@ -26,6 +29,7 @@
         <tr>{{ render_field(form.total_votantes) }}</tr>
 
     </table>
-    <p><input type=submit value="Escrutar">
+    <p><input type=submit value="Escrutar" id="escrutar">
 </form>
+<script type="text/javascript" src='{{url_for("static", filename="js/planilla.js")}}'></script>
 {% endblock %}

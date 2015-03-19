@@ -15,13 +15,18 @@ class DatosMesa(object):
 
     """docstring for DatosMesa"""
 
-    def __init__(self, mesa):
+    def __init__(self, mesa, todas=True):
         super(DatosMesa, self).__init__()
         self.mesa_numero = mesa.numero
         self.circuito = repr(mesa.escuela.circuito)
         self.escuela = repr(mesa.escuela)
-        self.planillas = [BotonPlanilla(planilla)
-                          for planilla in mesa.planillas]
+        if todas:
+            self.planillas = [BotonPlanilla(planilla)
+                              for planilla in mesa.planillas]
+        else:
+            self.planillas = [BotonPlanilla(planilla)
+                              for planilla in mesa.planillas
+                              if planilla.escrutada is False]
 
 
 class BotonPlanilla(object):

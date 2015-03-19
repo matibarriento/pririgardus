@@ -9,17 +9,26 @@
     </table>
     <table>
     <tr>
+        {% set i = 1 %}
         {% for planilla in datosMesa.planillas %}
-            <td>
-                {% if planilla.habilitado %}
-                    <form method='link' action='{{url_for("Planilla",planilla_id=planilla.id)}}'>
-                        <input type="submit" value="{{planilla.texto}}" >
-                    </form>
-                {% else %}
-                    <input type="submit" value="{{planilla.texto}}" disabled="True" title="{{planilla.texto}} ya fue escrutada" >
-                {% endif %}
-                
-            </td>
+        <td>
+            {% if planilla.habilitado %}
+                <form method='link' action='{{url_for("Planilla",planilla_id=planilla.id)}}'>
+                    <input type="submit" value="{{i}} - {{planilla.texto}}" >
+                </form>
+                {% set i = i + 1 %}
+            {% else %}
+                <input type="submit" value="{{planilla.texto}}" disabled="True" title="{{planilla.texto}} ya fue escrutada" >
+            {% endif %}
+            
+        </td>
         {% endfor %}
+        {% if botonSalir %}
+        <td>
+            <form method='link' action='{{url_for("index")}}'>
+                <input type="submit" value="{{i}} - Salir" >
+            </form>
+        </td>
+        {% endif %}
     </tr>
 </table>

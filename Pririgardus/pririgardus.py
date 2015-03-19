@@ -2,7 +2,8 @@
 import os
 import logging
 import argparse
-from flask import (Flask, render_template, jsonify, request, url_for)
+from flask import (Flask, render_template, jsonify, request, url_for, redirect)
+from werkzeug.contrib.fixers import ProxyFix
 #from flask.ext.admin import Admin
 from logica import parsearPlanilla
 from models.models import db, Mesa, PlanillaMesa
@@ -12,6 +13,8 @@ NOMBRE_BASE_DATOS = 'pririgardus.db'
 app = Flask(__name__)
 app.config["STATIC_URL"] = '/static/'
 app.config["STATIC_ROOT"] = '/static/'
+# app.config["SERVER_NAME"] = 'pririgardus:5000'
+app.config["LOGGER_NAME"] = 'PRG'
 app.config["BASE_DIR"] = os.path.dirname(os.path.dirname(__file__))
 app.config["SECRET_KEY"] = "pririgardus-elektoj"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + NOMBRE_BASE_DATOS
@@ -19,25 +22,25 @@ db.init_app(app)
 db.app = app
 #admin = Admin(app)
 
-parser = argparse.ArgumentParser(description='Pririgardus Arguments Parser')
-parser.add_argument('-l', '--logging', help='logging', action='store_true')
-parser.add_argument('-d', '--debug', help='debug', action='store_true')
-parser.add_argument('-p', '--port', help='port', type=int, default=5000)
-argv = parser.parse_args()
+# parser = argparse.ArgumentParser(description='Pririgardus Arguments Parser')
+# parser.add_argument('-l', '--logging', help='logging', action='store_true')
+# parser.add_argument('-d', '--debug', help='debug', action='store_true')
+# parser.add_argument('-p', '--port', help='port', type=int, default=5000)
+# argv = parser.parse_args()
 
 logger = logging.getLogger('PRG')
 logger.setLevel(logging.DEBUG)
 handler = logging.StreamHandler()
 formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
-if(argv.logging):
-    logger.addHandler(handler)
+# if(argv.logging):
+logger.addHandler(handler)
 app.config['LOGGER_NAME'] = logger.name
 # admin.add_view(ModelView(Pais, db.session))
 # admin.add_view(ModelView(Provincia, db.session))
 
 
-@app.route("/")
+@app.route("/", methods=['GET', 'POST'])
 def index():
     return render_template("index.html")
 
@@ -61,20 +64,22 @@ def Planilla(planilla_id):
         planilla = db.session.query(PlanillaMesa).filter(
             PlanillaMesa.id == planilla_id).first()
         form = CargarPlanilla(planilla)
-        return render_template("cargar_planilla.html", form=form)
+        return render_template("planilla.html", form=form)
     if request.method == 'POST':
         try:
             parsearPlanilla(planilla_id, request.form)
             return index()
         except Exception as e:
             logger.log(logging.ERROR, e)
-    return url_for("index")
+        return redirect(url_for("index"))
+
+app.wsgi_app = ProxyFix(app.wsgi_app)
 
 if __name__ == "__main__":
     debugging = True
-    port = int(os.environ.get("PORT", argv.port))
+    # port = int(os.environ.get("PORT", argv.port))
     try:
-        app.run(host='0.0.0.0', port=port, debug=debugging)
+        app.run(host='0.0.0.0', debug=debugging)
     except OSError as ose:
         print(
             "Puerto en uso,por favor selecione \
