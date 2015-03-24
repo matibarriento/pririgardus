@@ -1,6 +1,7 @@
 var mesas;
 $(function() {
-    $("#numero_mesa").val('')
+    $("#numero_mesa").focus();
+    $("#numero_mesa").val('');
     $("#numero_mesa").autocomplete({
         source: function (request, response) {
             $.getJSON(urlMesas, function (data) {
@@ -21,7 +22,7 @@ $(function() {
         change: function (event, ui) {
             if (ui.item) {
                 $("#numero_mesa").val(ui.item.label);
-                getDatosMesa(ui.item.value)
+                getDatosMesa(ui.item.value, false)
                 return false;
             }
             else {
@@ -33,8 +34,9 @@ $(function() {
         select: function (event, ui) {
             if (ui.item) {
                 $("#numero_mesa").val(ui.item.label);
-                getDatosMesa(ui.item.value)
+                getDatosMesa(ui.item.value, true)
                 $(this).trigger("change");
+                //$(this).blur();
                 return false;
             }
             else {
@@ -56,6 +58,9 @@ $(function() {
         },
     });
 });
-function getDatosMesa(numero_mesa) {
+function getDatosMesa(numero_mesa, focus) {
     $('#datosMesa').load('getDatosMesa/' + numero_mesa);
+    if(focus){
+        $('#datosMesa').focus();
+    }
 }

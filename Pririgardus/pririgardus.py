@@ -13,7 +13,6 @@ NOMBRE_BASE_DATOS = 'pririgardus.db'
 app = Flask(__name__)
 app.config["STATIC_URL"] = '/static/'
 app.config["STATIC_ROOT"] = '/static/'
-# app.config["SERVER_NAME"] = 'pririgardus:5000'
 app.config["LOGGER_NAME"] = 'PRG'
 app.config["BASE_DIR"] = os.path.dirname(os.path.dirname(__file__))
 app.config["SECRET_KEY"] = "pririgardus-elektoj"
@@ -68,7 +67,6 @@ def Planilla(planilla_id):
     if request.method == 'POST':
         try:
             parsearPlanilla(planilla_id, request.form)
-            return index()
         except Exception as e:
             logger.log(logging.ERROR, e)
         return redirect(url_for("index"))
@@ -81,9 +79,10 @@ if __name__ == "__main__":
     try:
         app.run(host='0.0.0.0', debug=debugging)
     except OSError as ose:
-        print(
-            "Puerto en uso,por favor selecione \
-            uno usando -p [port] excepto {0}".format(
-                argv.port))
-        print("Tal vez apreto Ctrl+Z para detener el servidor\
-              ...si no lo sabe usted xD")
+        pass
+        # print(
+        #     "Puerto en uso,por favor selecione \
+        #     uno usando -p [port] excepto {0}".format(
+        #         argv.port))
+        # print("Tal vez apreto Ctrl+Z para detener el servidor\
+        #       ...si no lo sabe usted xD")

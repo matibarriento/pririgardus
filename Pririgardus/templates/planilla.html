@@ -15,21 +15,22 @@
         <td>{{form.cargo}}</td>
     </tr>
 </table>
-<!-- '{{url_for("Planilla",planilla_id=form.planilla_id.data)}}' -->
-<form method=post action='/'>
-    {{form.planilla_id}}
-    <table>
-        {% for voto in form.votos_listas %}
-            <tr>{{ render_field(voto.voto)}}</tr>
-            
-        {% endfor %}
-        <tr>{{ render_field(form.nulos) }}</tr>
-        <tr>{{ render_field(form.blancos) }}</tr>
-        <tr>{{ render_field(form.impugnados) }}</tr>
-        <tr>{{ render_field(form.total_votantes) }}</tr>
+<div id="cargarPlanilla" tabindex="0">
+    <form method=post action='/'>
+        {{form.planilla_id}}
+        <table id="votosPlanilla" tabindex="0">
+            {% for voto in form.votos_listas %}
+                <tr>{{ render_field(voto.voto, class="voto")}}</tr>
+            {% endfor %}
+            <tr>{{ render_field(form.nulos, class="voto") }}</tr>
+            <tr>{{ render_field(form.blancos, class="voto") }}</tr>
+            <tr>{{ render_field(form.impugnados, class="voto") }}</tr>
+            <tr>{{ render_field(form.total_votantes, class="voto") }}</tr>
 
-    </table>
-    <p><input type=submit value="Escrutar" id="escrutar">
-</form>
+        </table>
+        <p><input type=submit value="Escrutar" id="escrutar"></p>
+        <p><input type=submit value="Cancelar" id="cancelar"></p>
+    </form>
+</div>
 <script type="text/javascript" src='{{url_for("static", filename="js/planilla.js")}}'></script>
 {% endblock %}
