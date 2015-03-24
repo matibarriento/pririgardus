@@ -1,7 +1,7 @@
 #pririgardus.py
 import os
 import logging
-import argparse
+#import argparse
 from flask import (Flask, render_template, jsonify, request, url_for, redirect)
 from werkzeug.contrib.fixers import ProxyFix
 #from flask.ext.admin import Admin
@@ -64,9 +64,14 @@ def Planilla(planilla_id):
             PlanillaMesa.id == planilla_id).first()
         form = CargarPlanilla(planilla)
         return render_template("planilla.html", form=form)
-    if request.method == 'POST':
+    elif request.method == 'POST':
         try:
             parsearPlanilla(planilla_id, request.form)
+            mesa = db.session.query(PlanillaMesa).filter(
+                PlanillaMesa.id == planilla_id).first().mesa
+            datosMesa = DatosMesa(mesa, todas=False)
+            return render_template("helpers/_datosMesa.html",
+                                   datosMesa=datosMesa, botonSalir=True)
         except Exception as e:
             logger.log(logging.ERROR, e)
         return redirect(url_for("index"))

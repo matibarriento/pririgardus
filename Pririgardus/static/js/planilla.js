@@ -1,11 +1,26 @@
 $(function() {
-    $('#escrutar').click(function() {
+
+    $("#datosMesa").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: false,
+        draggable: false,
+        dialogClass: "",
+        resizable: false,
+        title: "Próxima acción"
+       });
+
+    $('#escrutar').click(function(e) {
+        e.preventDefault();
         $.ajax({
             url: urlPlanilla,
             data: $('form').serialize(),
             type: 'POST',
             success: function(response) {
-                console.log(response);
+                $('#datosMesa').html(response);
+                console.log($('#datosMesa'));
+                $("#datosMesa").dialog( "open" );
+                return false;
             },
             error: function(error) {
                 console.log(error);
