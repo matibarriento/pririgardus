@@ -38,3 +38,7 @@ def validarForm(planilla, planilla_form):
             return False
     return True
     pass
+
+
+def exportarPlanilla(tipo_cargo_id, cargo_id, alcance_id):
+    pass

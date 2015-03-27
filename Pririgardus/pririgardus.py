@@ -4,10 +4,10 @@ import logging
 #import argparse
 from flask import (Flask, render_template, jsonify, request, url_for, redirect)
 from werkzeug.contrib.fixers import ProxyFix
-#from flask.ext.admin import Admin
+from flask.ext.admin import Admin
 from logica import parsearPlanilla
 from models.models import db, Mesa, PlanillaMesa
-from models.views import DatosMesa, CargarPlanilla
+from models.views import DatosMesa, CargarPlanilla, Exportar, PlanillaMV
 
 NOMBRE_BASE_DATOS = 'pririgardus.db'
 app = Flask(__name__)
@@ -19,7 +19,7 @@ app.config["SECRET_KEY"] = "pririgardus-elektoj"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + NOMBRE_BASE_DATOS
 db.init_app(app)
 db.app = app
-#admin = Admin(app)
+admin = Admin(app)
 
 # parser = argparse.ArgumentParser(description='Pririgardus Arguments Parser')
 # parser.add_argument('-l', '--logging', help='logging', action='store_true')
@@ -35,7 +35,12 @@ handler.setFormatter(formatter)
 # if(argv.logging):
 logger.addHandler(handler)
 app.config['LOGGER_NAME'] = logger.name
-# admin.add_view(ModelView(Pais, db.session))
+
+admin.add_view(Exportar(
+    name='Exportar', endpoint='ExportarPlanilla', category='Planilla'))
+admin.add_view(PlanillaMV(
+    db.session,
+    name='Planillas', endpoint='ListaPlanillas', category='Planilla'))
 # admin.add_view(ModelView(Provincia, db.session))
 
 

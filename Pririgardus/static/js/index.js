@@ -4,19 +4,7 @@ $(function() {
     $("#numero_mesa").val('');
     $("#numero_mesa").autocomplete({
         source: function (request, response) {
-            $.getJSON(urlMesas, function (data) {
-                response($.map(data, function (value, key) {
-                    if( value.startsWith(request.term)){
-                        return {
-                            label: value,
-                            value: key
-                        };
-                    }
-                    else{
-                        return null;
-                    }
-                }));
-            });
+            getNumerosMesa(request, response);
         },
         minLength:2,
         change: function (event, ui) {
@@ -63,4 +51,20 @@ function getDatosMesa(numero_mesa, focus) {
     if(focus){
         $('#datosMesa').focus();
     }
+}
+
+function getNumerosMesa(request, response){
+    $.getJSON(urlMesas, function (data) {
+        response($.map(data, function (value, key) {
+            if( value.startsWith(request.term)){
+                return {
+                    label: value,
+                    value: key
+                };
+            }
+            else{
+                return null;
+            }
+        }));
+    });
 }

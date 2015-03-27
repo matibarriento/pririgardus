@@ -1,7 +1,11 @@
 #models.view.py
 from wtforms import (Form, IntegerField, FieldList, FormField, HiddenField)
+from flask.ext.admin import BaseView, expose
+# from flask.ext.admin.model import BaseModelView
+from flask.ext.admin.contrib.sqla import ModelView
 #from wtforms.validators import InputRequired, NumberRange
 from models.constantes import VOTO_NAME_PREFIX
+from models.models import PlanillaMesa, TipoCargo
 
 
 class AttrDict(dict):
@@ -83,3 +87,48 @@ class CargarPlanilla(Form):
             planilla.total_votantes is not None) else 0
         for votolista in planilla.votos.all():
             self.votos_listas.entries.append(VotoLista(votolista))
+
+
+class Exportar(BaseView):
+
+    @expose('/')
+    def index(self):
+        tiposCargo = TipoCargo.query.all()
+        return self.render('exportar.html', tiposCargo=tiposCargo)
+
+
+class PlanillaMV(ModelView):
+    can_create = False
+    can_delete = False
+
+    column_sortable_list = (
+        ('mesa', PlanillaMesa.mesa_numero),
+        ('cargo', PlanillaMesa.cargo_id),
+        ('escrutada', PlanillaMesa.escrutada)
+    )
+    # column_searchable_list = (
+    #     'mesa_numero')
+
+    # column_filters = ('mesa_numero', 'cargo', 'escrutada')
+
+    # column_choices = {
+    #     'cargo': [
+    #         ('db_value', 'display_value'),
+    #     ]
+    # }
+
+    form_widget_args = {
+        'mesa': {
+            'disabled': True
+        },
+        'cargo': {
+            'disabled': True
+        }
+    }
+
+    form_excluded_columns = (
+        'nulos', 'blancos', 'impugnados', 'total_votantes', 'votos')
+
+    def __init__(self, session, **kwargs):
+        # You can pass name and other parameters if you want to
+        super(PlanillaMV, self).__init__(PlanillaMesa, session, **kwargs)

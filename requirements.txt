@@ -6,4 +6,7 @@ MarkupSafe==0.23
 SQLAlchemy==0.9.8
 WTForms==2.0.2
 Werkzeug==0.10.1
+XlsxWriter==0.7.1
+gunicorn==19.3.0
+ipython==3.0.0
 itsdangerous==0.24

@@ -2,7 +2,7 @@ $(function(){
     $('#datosMesaTable').keypress(function(e)
     {
         if (e.keyCode == 27) { 
-            $('#cancelar').click();
+            $('#salir').click();
         }
         else{
             try{

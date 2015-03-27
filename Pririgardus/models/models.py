@@ -244,7 +244,8 @@ class TipoCargo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     alcance_cargo = db.Column(db.String(50))
     descripcion = db.Column(db.String(50))
-
+    #propiedad 'cargos' para obtener sus hijas
+    
     def __init__(self, descripcion='', alcance_cargo=''):
         self.descripcion = descripcion
         try:
