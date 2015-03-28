@@ -12,14 +12,14 @@
         {% set i = 1 %}
         {% for planilla in datosMesa.planillas %}
         <td>
-            {% if planilla.habilitado %}
-                <form method='link' action='{{url_for("Planilla",planilla_id=planilla.id)}}'>
+            <form method='link' action='{{url_for("Planilla",planilla_id=planilla.id)}}'>
+                {% if planilla.habilitado %}
                     <input type="submit"  id="{{i}}" value="{{i}} - {{planilla.texto}}" >
-                </form>
-                {% set i = i + 1 %}
-            {% else %}
-                <input type="submit" value="{{planilla.texto}}" disabled="True" title="{{planilla.texto}} ya fue escrutada" >
-            {% endif %}
+                    {% set i = i + 1 %}
+                {% else %}
+                    <input type="submit" value="{{planilla.texto}}" title="{{planilla.texto}} ya fue escrutada" >
+                {% endif %}
+            </form>
             
         </td>
         {% endfor %}

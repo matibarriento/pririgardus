@@ -9,6 +9,25 @@
     <link rel="stylesheet" href="/static/js/lib/jquery-ui.theme.min.css">
 </head>
 <body>
-{% block body %}{% endblock %}
+    <div>
+        <table>
+            <tr>
+                <td>
+                    <h1>Pririgardus elektoj</h1>
+                </td>
+                <td>
+                    <p>Como su nombre lo indica claramente, un centro de computo</p>
+                </td>
+                <td>
+                    <a href="/">Inicio</a>
+                    <a href="/admin">Administración</a>
+                    <a href="/informes">Informes</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div>
+    {% block body %}{% endblock %}
+    <div>
 </body>
 </html>

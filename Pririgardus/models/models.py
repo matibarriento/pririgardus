@@ -78,6 +78,9 @@ class Departamento(db.Model):
             mesas.extend(loc.getMesas())
         return mesas
 
+    def getFullRepr(self):
+        return "{0} - {1}".format(self.provincia.descripcion, self.descripcion)
+
 
 class Localidad(db.Model):
 
@@ -103,6 +106,10 @@ class Localidad(db.Model):
         for secc in self.seccionales.all():
             mesas.extend(secc.getMesas())
         return mesas
+
+    def getFullRepr(self):
+        return "{0} - {1}".format(
+            self.departamento.provincia.descripcion, self.descripcion)
 
 
 class Seccional(db.Model):
@@ -245,7 +252,7 @@ class TipoCargo(db.Model):
     alcance_cargo = db.Column(db.String(50))
     descripcion = db.Column(db.String(50))
     #propiedad 'cargos' para obtener sus hijas
-    
+
     def __init__(self, descripcion='', alcance_cargo=''):
         self.descripcion = descripcion
         try:

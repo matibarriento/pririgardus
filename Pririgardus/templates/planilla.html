@@ -2,6 +2,7 @@
 {% block body %}
 <script type="text/javascript">
     var urlPlanilla = '{{url_for("Planilla",planilla_id=form.planilla_id.data)}}';
+    var  escrutada = '{{form.escrutada}}' == 'True'
 </script>
 {% from "helpers/_formHelpers.html" import render_field %}
 <table>
@@ -20,12 +21,12 @@
         {{form.planilla_id}}
         <table id="votosPlanilla" tabindex="0">
             {% for voto in form.votos_listas %}
-                <tr>{{ render_field(voto.voto, class="voto")}}</tr>
+                <tr>{{ render_field(voto.voto, labeled=form.escrutada, class="voto")}}</tr>
             {% endfor %}
-            <tr>{{ render_field(form.nulos, class="voto") }}</tr>
-            <tr>{{ render_field(form.blancos, class="voto") }}</tr>
-            <tr>{{ render_field(form.impugnados, class="voto") }}</tr>
-            <tr>{{ render_field(form.total_votantes, class="voto") }}</tr>
+            <tr>{{ render_field(form.nulos, labeled=form.escrutada, class="voto") }}</tr>
+            <tr>{{ render_field(form.blancos, labeled=form.escrutada, class="voto") }}</tr>
+            <tr>{{ render_field(form.impugnados, labeled=form.escrutada, class="voto") }}</tr>
+            <tr>{{ render_field(form.total_votantes, labeled=form.escrutada, class="voto") }}</tr>
 
         </table>
         <p><input type=submit value="Escrutar" id="escrutar"></p>

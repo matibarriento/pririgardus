@@ -5,7 +5,7 @@ from flask.ext.admin import BaseView, expose
 from flask.ext.admin.contrib.sqla import ModelView
 #from wtforms.validators import InputRequired, NumberRange
 from models.constantes import VOTO_NAME_PREFIX
-from models.models import PlanillaMesa, TipoCargo
+from models.models import PlanillaMesa, Cargo, TipoCargo, db
 
 
 class AttrDict(dict):
@@ -87,13 +87,15 @@ class CargarPlanilla(Form):
             planilla.total_votantes is not None) else 0
         for votolista in planilla.votos.all():
             self.votos_listas.entries.append(VotoLista(votolista))
+        self.escrutada = planilla.escrutada
 
 
 class Exportar(BaseView):
 
     @expose('/')
     def index(self):
-        tiposCargo = TipoCargo.query.all()
+        tiposCargo = db.session.query(TipoCargo).join(
+            TipoCargo.cargos).order_by(Cargo.id.desc()).all()
         return self.render('exportar.html', tiposCargo=tiposCargo)
 
 
@@ -106,10 +108,12 @@ class PlanillaMV(ModelView):
         ('cargo', PlanillaMesa.cargo_id),
         ('escrutada', PlanillaMesa.escrutada)
     )
-    # column_searchable_list = (
-    #     'mesa_numero')
 
-    # column_filters = ('mesa_numero', 'cargo', 'escrutada')
+    column_exclude_list = ("nulos", "blancos", "impugnados", "total_votantes")
+    
+    # column_searchable_list = (PlanillaMesa.mesa_numero)
+
+    column_filters = ('mesa_numero', 'escrutada')
 
     # column_choices = {
     #     'cargo': [

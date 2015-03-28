@@ -5,8 +5,8 @@ import logging
 from flask import (Flask, render_template, jsonify, request, url_for, redirect)
 from werkzeug.contrib.fixers import ProxyFix
 from flask.ext.admin import Admin
-from logica import parsearPlanilla
-from models.models import db, Mesa, PlanillaMesa
+from logica import parsearPlanilla, exportarPlanilla
+from models.models import db, Mesa, PlanillaMesa, TipoCargo, AlcanceCargo
 from models.views import DatosMesa, CargarPlanilla, Exportar, PlanillaMV
 
 NOMBRE_BASE_DATOS = 'pririgardus.db'
@@ -41,7 +41,6 @@ admin.add_view(Exportar(
 admin.add_view(PlanillaMV(
     db.session,
     name='Planillas', endpoint='ListaPlanillas', category='Planilla'))
-# admin.add_view(ModelView(Provincia, db.session))
 
 
 @app.route("/", methods=['GET', 'POST'])
@@ -53,6 +52,33 @@ def index():
 def getMesas():
     return jsonify([
         (str(num.numero), str(num.numero)) for num in Mesa.query.all()])
+
+
+@app.route("/getAlcanceTipoCargo")
+@app.route("/getAlcanceTipoCargo/<tipo_cargo_id>")
+def getAlcanceTipoCargo(tipo_cargo_id):
+    tipoCargo = db.session.query(TipoCargo).filter(
+        TipoCargo.id == tipo_cargo_id).first()
+    if tipoCargo is not None:
+        cargo = tipoCargo.cargos.all()
+        if(tipoCargo.alcance_cargo == AlcanceCargo.Cargo_Local.name):
+            return jsonify([
+               (str(c.id), str(c.alcance.getFullRepr())) for c in cargo
+        ])
+        elif(tipoCargo.alcance_cargo == AlcanceCargo.Cargo_Departamental.name):
+            return jsonify([
+               (str(c.id), str(c.alcance.getFullRepr())) for c in cargo
+        ])
+        elif(tipoCargo.alcance_cargo == AlcanceCargo.Cargo_Provincial.name):
+            return jsonify([
+               (str(c.id), str(c.alcance.descripcion)) for c in cargo
+        ])
+        elif(tipoCargo.alcance_cargo == AlcanceCargo.Cargo_Nacional.name):
+            return jsonify([
+               (str(c.id), str(c.alcance.descripcion)) for c in cargo
+        ])
+    else:
+        return jsonify([])
 
 
 @app.route("/getDatosMesa/<numero_mesa>")
@@ -75,11 +101,18 @@ def Planilla(planilla_id):
             mesa = db.session.query(PlanillaMesa).filter(
                 PlanillaMesa.id == planilla_id).first().mesa
             datosMesa = DatosMesa(mesa, todas=False)
-            return render_template("helpers/_datosMesa.html",
-                                   datosMesa=datosMesa, botonSalir=True)
+            if(len(datosMesa.planillas) > 0):
+                return render_template("helpers/_datosMesa.html",
+                                       datosMesa=datosMesa, botonSalir=True)
         except Exception as e:
             logger.log(logging.ERROR, e)
         return redirect(url_for("index"))
+
+
+@app.route("/Exportar")
+@app.route("/Exportar/<tipo_cargo_id>/<cargo_id>", methods=['POST'])
+def ExportarPlanilla(cargo_id):
+    exportarPlanilla(cargo_id)
 
 app.wsgi_app = ProxyFix(app.wsgi_app)
 

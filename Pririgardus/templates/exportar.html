@@ -1,26 +1,27 @@
-{% extends 'admin/master.html' %}
+{% extends "_layout.html" %}
 {% block body %}
-    {{ super() }}
-    <script type="text/javascript" src="/static/js/lib/jquery-1.11.2.min.js" ></script>
-    <script type="text/javascript" src="/static/js/lib/jquery-ui.min.js" ></script>
-    <link rel="stylesheet" href="/static/js/lib/jquery-ui.min.css">
-    <link rel="stylesheet" href="/static/js/lib/jquery-ui.theme.min.css">
-    <form method="POST" action="/admin/ExportarPlanilla/">
-        <table>
-            <tr>
-                <td>
+<script type="text/javascript">
+    var urlAlcances = '{{url_for("getAlcanceTipoCargo")}}';
+    var urlExportar = '{{url_for("ExportarPlanilla")}}';
+</script>
+<form method="POST" action="/admin/ExportarPlanilla/">
+    <table>
+        <tr>
+            <td>
                 <select id="tipoCargo">
                     <option value="0">Seleccione</option>
                 {% for tipo in tiposCargo %}
                     <option value="{{ tipo.id }}">{{ tipo.descripcion }}</option>
                 {% endfor %}
                 </select>
-</td>
-                <td><input id="cargo" type="text" tabindex="2"></td>
-                <td><input id="alcanceCargo" type="text" tabindex="3"></td>
-            </tr>
-        </table>
-         <p><input type=submit value="Exportar" id="exportar"></p>
-    </form>
+            </td>
+            <td>
+                <input id="cargoID" type="hidden">
+                <input id="alcanceCargo" type="text" tabindex="3">
+            </td>
+        </tr>
+    </table>
+     <p><input type=submit value="Exportar" id="exportar"></p>
+</form>
 <script type="text/javascript" src='{{url_for("static", filename="js/exportar.js")}}'></script>
 {% endblock %}

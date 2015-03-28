@@ -1,5 +1,5 @@
 #logica.py
-from models.models import db, PlanillaMesa, VotoListaMesa
+from models.models import db, PlanillaMesa, VotoListaMesa, Cargo, Mesa
 from models.constantes import VOTO_NAME_PREFIX, VALIDACION_PLANILLA
 
 
@@ -40,5 +40,5 @@ def validarForm(planilla, planilla_form):
     pass
 
 
-def exportarPlanilla(tipo_cargo_id, cargo_id, alcance_id):
-    pass
+def exportarPlanilla(cargo_id):
+    cargo = Cargo.query.filter(Cargo.id == 2).first()

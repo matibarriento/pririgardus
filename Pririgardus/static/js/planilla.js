@@ -1,5 +1,10 @@
 $(function() {
 
+    if(escrutada){
+        $("#escrutar").remove();
+        $("#cancelar").val("Salir");
+
+    }
     $("#datosMesa").dialog({
         autoOpen: false,
         modal: true,

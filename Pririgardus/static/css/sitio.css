@@ -1,4 +1,24 @@
-.ui-autocomplete { height: 210px; overflow-y: scroll; overflow-x: hidden;}
-#selecionarMesa #inputMesa { float: left; height: auto;}
-#selecionarMesa #datosMesa { float: left}
-.escrutar-focus { font-weight: bold}
+.ui-autocomplete {
+    width: auto !important;
+    height: auto; 
+    max-height: 210px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+#selecionarMesa #inputMesa {
+    float: left;
+    height: auto;
+}
+
+#selecionarMesa #datosMesa { 
+    float: left
+}
+
+.escrutar-focus {
+    font-weight: bold
+}
+
+header .head {
+    float: left;
+}
