@@ -2,7 +2,7 @@
 {% block body %}
 <script type="text/javascript">
     var urlPlanilla = '{{url_for("Planilla",planilla_id=form.planilla_id.data)}}';
-    var  escrutada = '{{form.escrutada}}' == 'True'
+    var  escrutada = '{{form.escrutada}}' == 'True';
 </script>
 {% from "helpers/_formHelpers.html" import render_field %}
 <table>

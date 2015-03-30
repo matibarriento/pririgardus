@@ -1,0 +1,18 @@
+{% extends "_layout.html" %}
+{% block body %}
+<script type="text/javascript" src='{{url_for("static", filename="js/informes.js")}}'></script>
+<h2>Informes</h2>
+<button id="agregarInforme">Nuevo Informe</button>
+
+<div id="divInformes">
+    <ul>
+        <li>
+            <a href="#informe-1">Nunc tincidunt</a> <span class='cerrar'><button>X</button></span>
+        </li>
+    </ul>
+    <div id="informe-1">
+        <p>Proin elit arcu, rutrum commodo, vehicula tempus, commodo a, risus. Curabitur nec arcu. Donec sollicitudin mi sit amet mauris. Nam elementum quam ullamcorper ante. Etiam aliquet massa et lorem. Mauris dapibus lacus auctor risus. Aenean tempor ullamcorper leo. Vivamus sed magna quis ligula eleifend adipiscing. Duis orci. Aliquam sodales tortor vitae ipsum. Aliquam nulla. Duis aliquam molestie erat. Ut et mauris vel pede varius sollicitudin. Sed ut dolor nec orci tincidunt interdum. Phasellus ipsum. Nunc tristique tempus lectus.</p>
+    </div>
+</div>
+
+{% endblock %}

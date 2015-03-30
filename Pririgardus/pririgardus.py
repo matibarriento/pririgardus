@@ -6,7 +6,8 @@ from flask import (Flask, render_template, jsonify, request, url_for, redirect)
 from werkzeug.contrib.fixers import ProxyFix
 from flask.ext.admin import Admin
 from logica import parsearPlanilla, exportarPlanilla
-from models.models import db, Mesa, PlanillaMesa, TipoCargo, AlcanceCargo
+from models.models import (
+    db, Mesa, PlanillaMesa, TipoCargo, AlcanceCargo, Cargo, Frente, Lista)
 from models.views import DatosMesa, CargarPlanilla, Exportar, PlanillaMV
 
 NOMBRE_BASE_DATOS = 'pririgardus.db'
@@ -42,10 +43,7 @@ admin.add_view(PlanillaMV(
     db.session,
     name='Planillas', endpoint='ListaPlanillas', category='Planilla'))
 
-
-@app.route("/", methods=['GET', 'POST'])
-def index():
-    return render_template("index.html")
+### Para autocompetados ###
 
 
 @app.route("/getMesas")
@@ -81,11 +79,53 @@ def getAlcanceTipoCargo(tipo_cargo_id):
         return jsonify([])
 
 
+@app.route("/getFrentesCargo")
+@app.route("/getFrentesCargo/<cargo_id>")
+def getFrentesCargo(cargo_id):
+    frentes = db.session.query(Frente).join(
+        Frente.listas).filter(Lista.cargo_id == 1).all()
+    response = [(0, "Todos")]
+    for frente in frentes:
+        response.append((frente.id, frente.descripcion))
+    return jsonify(response)
+
+
+@app.route("/getListasFrenteCargo")
+@app.route("/getListasFrenteCargo/<frente_id>/<cargo_id>")
+def getListasFrenteCargo(frente_id, cargo_id):
+    listas = db.session.query(Lista).filter(
+        Lista.cargo_id == 1, Lista.frente_id == 1).all()
+    response = [(0, "Todas")]
+    for lista in listas:
+        response.append((lista.id, lista.descripcion))
+    return jsonify(response)
+
+###########################################################################
+
+### Para renderizar helpers ###
+
+
 @app.route("/getDatosMesa/<numero_mesa>")
 def getDatosMesa(numero_mesa):
     mesa = db.session.query(Mesa).filter(Mesa.numero == numero_mesa).first()
     datosMesa = DatosMesa(mesa)
     return render_template("helpers/_datosMesa.html", datosMesa=datosMesa)
+
+###########################################################################
+
+### Pantallas y submits ###
+
+
+@app.route("/", methods=['GET', 'POST'])
+def index():
+    return render_template("index.html")
+
+
+@app.route("/informes", methods=['GET', 'POST'])
+def informes():
+    tiposCargo = db.session.query(TipoCargo).join(
+        TipoCargo.cargos).order_by(Cargo.id.desc()).all()
+    return render_template("helpers/_informe.html", tiposCargo=tiposCargo)
 
 
 @app.route("/Planilla/<planilla_id>", methods=['GET', 'POST'])
@@ -113,6 +153,14 @@ def Planilla(planilla_id):
 @app.route("/Exportar/<tipo_cargo_id>/<cargo_id>", methods=['POST'])
 def ExportarPlanilla(cargo_id):
     exportarPlanilla(cargo_id)
+
+
+@app.route("/Filtrar")
+@app.route("/Filtrar/<tipo_cargo_id>/<cargo_id>", methods=['POST'])
+def Filtrar(cargo_id):
+    exportarPlanilla(cargo_id)
+
+###########################################################################
 
 app.wsgi_app = ProxyFix(app.wsgi_app)
 

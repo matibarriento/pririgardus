@@ -23,7 +23,7 @@ $(function() {
             }
             else {
                 $("#alcanceCargo").val('');
-                $("#cCargoID")[0].value = '-1';
+                $("#cargoID")[0].value = '-1';
             }
             $(this).trigger("change");
         },
