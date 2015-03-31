@@ -10,14 +10,15 @@ from models.models import (
     db, Mesa, PlanillaMesa, TipoCargo, AlcanceCargo, Cargo, Frente, Lista)
 from models.views import DatosMesa, CargarPlanilla, Exportar, PlanillaMV
 
-NOMBRE_BASE_DATOS = 'pririgardus.db'
+# NOMBRE_BASE_DATOS = 'pririgardus.db'
 app = Flask(__name__)
-app.config["STATIC_URL"] = '/static/'
-app.config["STATIC_ROOT"] = '/static/'
-app.config["LOGGER_NAME"] = 'PRG'
-app.config["BASE_DIR"] = os.path.dirname(os.path.dirname(__file__))
-app.config["SECRET_KEY"] = "pririgardus-elektoj"
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + NOMBRE_BASE_DATOS
+app.config.from_object('config')
+# app.config["STATIC_URL"] = '/static/'
+# app.config["STATIC_ROOT"] = '/static/'
+# app.config["LOGGER_NAME"] = 'PRG'
+# app.config["BASE_DIR"] = os.path.dirname(os.path.dirname(__file__))
+# app.config["SECRET_KEY"] = "pririgardus-elektoj"
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + NOMBRE_BASE_DATOS
 db.init_app(app)
 db.app = app
 admin = Admin(app)
