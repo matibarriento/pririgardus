@@ -273,7 +273,9 @@ class Frente(db.Model):
     descripcion = db.Column(db.String(50))
     #propiedad 'listas' para obtener sus hijas
 
-    def __init__(self, descripcion=''):
+    def __init__(self, id=None, descripcion=''):
+        if(id):
+            self.id = int(id)
         self.descripcion = descripcion
 
     def __repr__(self):
@@ -287,6 +289,8 @@ class Lista(db.Model):
     __tablename__ = "Lista"
     id = db.Column(db.Integer, primary_key=True)
     descripcion = db.Column(db.String(50))
+    posicionFrente = db.Column(db.Integer)
+    posicionLista = db.Column(db.Integer)
     frente_id = db.Column(db.Integer, db.ForeignKey('Frente.id'))
     frente = db.relationship('Frente', backref=db.backref(
         'listas', lazy='dynamic'))
@@ -295,7 +299,10 @@ class Lista(db.Model):
         'listas', lazy='dynamic'))
     #propidad 'votos' para obtener sus hijos
 
-    def __init__(self, descripcion='', frente='', cargo=''):
+    def __init__(self, posicionFrente, posicionLista,
+                 descripcion='', frente='', cargo=''):
+        self.posicionFrente = int(posicionFrente)
+        self.posicionLista = int(posicionLista)
         self.descripcion = descripcion
         self.frente = frente
         self.cargo = cargo

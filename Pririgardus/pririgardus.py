@@ -95,7 +95,7 @@ def getFrentesCargo(cargo_id):
 @app.route("/getListasFrenteCargo/<frente_id>/<cargo_id>")
 def getListasFrenteCargo(frente_id, cargo_id):
     listas = db.session.query(Lista).filter(
-        Lista.cargo_id == 1, Lista.frente_id == 1).all()
+        Lista.cargo_id == cargo_id, Lista.frente_id == frente_id).all()
     response = [(0, "Todas")]
     for lista in listas:
         response.append((lista.id, lista.descripcion))
