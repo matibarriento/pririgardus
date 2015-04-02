@@ -1,5 +1,5 @@
 #logica.py
-from models.models import db, PlanillaMesa, VotoListaMesa, Cargo, Mesa
+from models.models import db, PlanillaMesa, VotoListaMesa, Cargo
 from models.constantes import VOTO_NAME_PREFIX, VALIDACION_PLANILLA
 
 

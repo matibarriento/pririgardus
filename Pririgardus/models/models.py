@@ -220,7 +220,6 @@ class Mesa(db.Model):
                     PlanillaMesa.cargo == cargo).first()
                 if not planilla:
                     db.session.add(PlanillaMesa(mesa=self, cargo=cargo))
-            db.session.commit()
 
     def getCargos(self):
         cargos = []
@@ -393,7 +392,6 @@ class Cargo_Local(Cargo):
                     PlanillaMesa.cargo == self).first()
                 if not planilla:
                     db.session.add(PlanillaMesa(mesa=mesa, cargo=self))
-            db.session.commit()
 
 
 class Cargo_Departamental(Cargo):
@@ -433,7 +431,6 @@ class Cargo_Departamental(Cargo):
                     PlanillaMesa.cargo == self).first()
                 if not planilla:
                     db.session.add(PlanillaMesa(mesa=mesa, cargo=self))
-            db.session.commit()
 
 
 class Cargo_Provincial(Cargo):
@@ -472,7 +469,6 @@ class Cargo_Provincial(Cargo):
                     PlanillaMesa.cargo == self).first()
                 if not planilla:
                     db.session.add(PlanillaMesa(mesa=mesa, cargo=self))
-            db.session.commit()
 
 
 class Cargo_Nacional(Cargo):
@@ -512,7 +508,6 @@ class Cargo_Nacional(Cargo):
                     PlanillaMesa.cargo == self).first()
                 if not planilla:
                     db.session.add(PlanillaMesa(mesa=mesa, cargo=self))
-            db.session.commit()
 
 
 class PlanillaMesa(db.Model):
@@ -555,7 +550,6 @@ class PlanillaMesa(db.Model):
                 if not votolista:
                     db.session.add(
                         VotoListaMesa(planilla=self, lista=lista))
-            db.session.commit()
 
 
 class VotoListaMesa(db.Model):
@@ -581,3 +575,72 @@ class VotoListaMesa(db.Model):
 
     def __repr__(self):
         return str.upper('Votos de {0}'.format(self.descripcion))
+
+
+class Usuario(db.Model):
+
+    """docstring for Usuario"""
+
+    __tablename__ = "Usuario"
+    id = db.Column(db.Integer, primary_key=True)
+    usuario = db.Column(db.String(50), unique=True)
+    contraseña = db.Column(db.String(50))
+    roles = db.relationship("Rol", secondary=lambda: UsuarioRoles)
+
+    def __init__(self, usuario='', passw=''):
+        self.usuario = usuario
+        self.contraseña = passw
+
+    def __repr__(self):
+        return self.usuario
+
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return self.id
+
+
+class Roles(Enum):
+
+    """docstring for Roles"""
+
+    Administrador = 1
+    DataEntry = 2
+    Prensa = 3
+
+
+class Rol(db.Model):
+
+    """docstring for Rol"""
+
+    __tablename__ = "Rol"
+    id = db.Column(db.Integer, primary_key=True)
+    descripcion = db.Column(db.String(50), unique=True)
+
+    def __init__(self, rol=''):
+        try:
+            self.id = int(Roles[rol].value)
+            self.descripcion = Roles[rol].name
+        except KeyError:
+            raise KeyError
+
+    def __repr__(self):
+        return self.descripcion
+
+
+UsuarioRoles = db.Table(
+    'UsuarioRoles', db.Model.metadata,
+    db.Column('usuario_id',
+              db.Integer,
+              db.ForeignKey("Usuario.id"), primary_key=True),
+    db.Column('rol_id',
+              db.Integer,
+              db.ForeignKey("Rol.id"), primary_key=True)
+)

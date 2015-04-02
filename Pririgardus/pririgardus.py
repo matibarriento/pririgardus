@@ -1,27 +1,25 @@
 #pririgardus.py
-import os
+
 import logging
 #import argparse
 from flask import (Flask, render_template, jsonify, request, url_for, redirect)
 from werkzeug.contrib.fixers import ProxyFix
 from flask.ext.admin import Admin
+from flask.ext.login import LoginManager
 from logica import parsearPlanilla, exportarPlanilla
-from models.models import (
-    db, Mesa, PlanillaMesa, TipoCargo, AlcanceCargo, Cargo, Frente, Lista)
+from models.models import (db, Mesa, PlanillaMesa, TipoCargo, AlcanceCargo,
+                           Cargo, Frente, Lista, Usuario)
 from models.views import DatosMesa, CargarPlanilla, Exportar, PlanillaMV
 
 # NOMBRE_BASE_DATOS = 'pririgardus.db'
 app = Flask(__name__)
 app.config.from_object('config')
-# app.config["STATIC_URL"] = '/static/'
-# app.config["STATIC_ROOT"] = '/static/'
-# app.config["LOGGER_NAME"] = 'PRG'
-# app.config["BASE_DIR"] = os.path.dirname(os.path.dirname(__file__))
-# app.config["SECRET_KEY"] = "pririgardus-elektoj"
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + NOMBRE_BASE_DATOS
 db.init_app(app)
 db.app = app
+# base_template="_layout.html"
 admin = Admin(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
 
 # parser = argparse.ArgumentParser(description='Pririgardus Arguments Parser')
 # parser.add_argument('-l', '--logging', help='logging', action='store_true')
@@ -44,7 +42,7 @@ admin.add_view(PlanillaMV(
     db.session,
     name='Planillas', endpoint='ListaPlanillas', category='Planilla'))
 
-### Para autocompetados ###
+# Para autocompetados ###
 
 
 @app.route("/getMesas")
@@ -62,20 +60,16 @@ def getAlcanceTipoCargo(tipo_cargo_id):
         cargo = tipoCargo.cargos.all()
         if(tipoCargo.alcance_cargo == AlcanceCargo.Cargo_Local.name):
             return jsonify([
-               (str(c.id), str(c.alcance.getFullRepr())) for c in cargo
-        ])
+               (str(c.id), str(c.alcance.getFullRepr())) for c in cargo])
         elif(tipoCargo.alcance_cargo == AlcanceCargo.Cargo_Departamental.name):
             return jsonify([
-               (str(c.id), str(c.alcance.getFullRepr())) for c in cargo
-        ])
+               (str(c.id), str(c.alcance.getFullRepr())) for c in cargo])
         elif(tipoCargo.alcance_cargo == AlcanceCargo.Cargo_Provincial.name):
             return jsonify([
-               (str(c.id), str(c.alcance.descripcion)) for c in cargo
-        ])
+               (str(c.id), str(c.alcance.descripcion)) for c in cargo])
         elif(tipoCargo.alcance_cargo == AlcanceCargo.Cargo_Nacional.name):
             return jsonify([
-               (str(c.id), str(c.alcance.descripcion)) for c in cargo
-        ])
+               (str(c.id), str(c.alcance.descripcion)) for c in cargo])
     else:
         return jsonify([])
 
@@ -103,7 +97,7 @@ def getListasFrenteCargo(frente_id, cargo_id):
 
 ###########################################################################
 
-### Para renderizar helpers ###
+# Para renderizar helpers ###
 
 
 @app.route("/getDatosMesa/<numero_mesa>")
@@ -114,7 +108,7 @@ def getDatosMesa(numero_mesa):
 
 ###########################################################################
 
-### Pantallas y submits ###
+# Pantallas y submits ###
 
 
 @app.route("/", methods=['GET', 'POST'])
@@ -160,6 +154,16 @@ def ExportarPlanilla(cargo_id):
 @app.route("/Filtrar/<tipo_cargo_id>/<cargo_id>", methods=['POST'])
 def Filtrar(cargo_id):
     exportarPlanilla(cargo_id)
+
+###########################################################################
+
+# Para configuraciones ###
+
+
+@login_manager.user_loader
+def load_user(userid):
+    return db.session.query(Usuario).filter(
+        Usuario.id == userid).first()
 
 ###########################################################################
 
