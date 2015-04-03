@@ -1,7 +1,7 @@
-#pririgardus.py
+# pririgardus.py
 
 import logging
-#import argparse
+# import argparse
 from flask import (Flask, render_template, jsonify, request, url_for, redirect)
 from werkzeug.contrib.fixers import ProxyFix
 from flask.ext.admin import Admin
@@ -12,7 +12,7 @@ from models.models import (db, Mesa, PlanillaMesa, TipoCargo, AlcanceCargo,
                            Cargo, Frente, Lista, Usuario, Roles)
 from models.views import (
     DatosMesa, CargarPlanilla, Exportar,
-    PlanillaMV, LoginForm, UsuarioMV, Administrador)
+    PlanillaMV, LoginForm, UsuarioMV)
 from helpers import requires_roles
 
 # NOMBRE_BASE_DATOS = 'pririgardus.db'
@@ -21,7 +21,7 @@ app.config.from_object('config')
 db.init_app(app)
 db.app = app
 # base_template="_layout.html"
-admin = Admin(app)#, index_view=Administrador, endpoint=None)
+admin = Admin(app)  #, index_view=Administrador, endpoint=None)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "/"

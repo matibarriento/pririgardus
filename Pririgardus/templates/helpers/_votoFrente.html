@@ -1,0 +1,13 @@
+{% from "helpers/_formHelpers.html" import render_field %}
+{% macro render_frente(frente, labeled=False) %}
+
+<table>
+    <div tabindex="0" class="{{frente.clase}} votosFrente">
+        {{frente.frente}}
+
+        {%for voto in frente.votos_listas %}
+            <tr>{{ render_field(voto.voto, labeled=labeled, class="voto") }}</tr>
+        {% endfor %}
+    </div>
+</table>
+{% endmacro %}

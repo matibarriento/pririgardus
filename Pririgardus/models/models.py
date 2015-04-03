@@ -519,7 +519,7 @@ class PlanillaMesa(db.Model):
     nulos = db.Column(db.Integer, nullable=True)
     blancos = db.Column(db.Integer, nullable=True)
     impugnados = db.Column(db.Integer, nullable=True)
-    total_votantes = db.Column(db.Integer, nullable=True)
+    recurridos = db.Column(db.Integer, nullable=True)
     escrutada = db.Column(db.Boolean, default=False)
     mesa_numero = db.Column(db.Integer, db.ForeignKey('Mesa.numero'))
     mesa = db.relationship('Mesa', backref=db.backref(
@@ -550,6 +550,14 @@ class PlanillaMesa(db.Model):
                 if not votolista:
                     db.session.add(
                         VotoListaMesa(planilla=self, lista=lista))
+
+    def getFrentes(self):
+        frentes = []
+        [frentes.append(voto.lista.frente)
+            for voto in self.votos.join(Lista).order_by(Lista.posicionFrente)
+            if voto.lista.frente not in frentes]
+
+        return frentes
 
 
 class VotoListaMesa(db.Model):

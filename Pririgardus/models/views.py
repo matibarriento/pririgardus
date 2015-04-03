@@ -57,9 +57,27 @@ class VotoLista(Form):
     def __init__(self, votolista):
         super(VotoLista, self).__init__(obj=votolista)
         self.voto.name = VOTO_NAME_PREFIX + str(votolista.id)
-        self.voto.label = votolista.lista.descripcion
+        self.voto.label = "{0} - {1}".format(
+            votolista.lista.posicionLista, votolista.lista.descripcion)
         self.voto.data = votolista.votos if (
             votolista.votos is not None) else 0
+
+
+class VotoFrente(Form):
+
+    """docstring for VotoFrente"""
+
+    votos_listas = FieldList(
+        FormField(VotoLista, default=lambda: AttrDict(voto='')))
+
+    def __init__(self, frente, planilla):
+        super(VotoFrente, self).__init__(obj=frente)
+        self.frente = "{0} - {1}".format(frente.id, frente.descripcion)
+        self.clase = frente.id
+        for votolista in planilla.votos.join(Lista).order_by(
+                Lista.posicionLista):
+            if votolista.lista.frente == frente:
+                self.votos_listas.entries.append(VotoLista(votolista))
 
 
 class CargarPlanilla(Form):
@@ -69,9 +87,9 @@ class CargarPlanilla(Form):
     nulos = IntegerField(label="Votos Nulos", default=0)
     blancos = IntegerField(label="Votos Blancos", default=0)
     impugnados = IntegerField(label="Votos Impugnados", default=0)
-    total_votantes = IntegerField(label="Total Votantes", default=0)
-    votos_listas = FieldList(
-        FormField(VotoLista, default=lambda: AttrDict(voto='')))
+    recurridos = IntegerField(label="Votos Recurridos", default=0)
+    votos_frentes = FieldList(
+        FormField(VotoFrente, default=lambda: AttrDict(lista='')))
 
     def __init__(self, planilla):
         super(CargarPlanilla, self).__init__(obj=planilla)
@@ -88,11 +106,13 @@ class CargarPlanilla(Form):
             planilla.blancos is not None) else 0
         self.impugnados.data = planilla.impugnados if (
             planilla.impugnados is not None) else 0
-        self.total_votantes.data = planilla.total_votantes if (
-            planilla.total_votantes is not None) else 0
-        for votolista in planilla.votos.join(Lista).order_by(
-                Lista.posicionFrente, Lista.posicionLista).all():
-            self.votos_listas.entries.append(VotoLista(votolista))
+        self.recurridos.data = planilla.recurridos if (
+            planilla.recurridos is not None) else 0
+        for frente in planilla.getFrentes():
+            self.votos_frentes.entries.append(VotoFrente(frente, planilla))
+        # for votolista in planilla.votos.join(Lista).order_by(
+        #         Lista.posicionFrente, Lista.posicionLista).all():
+        #     self.votos_listas.entries.append(VotoLista(votolista))
         self.escrutada = planilla.escrutada
 
 
@@ -154,7 +174,7 @@ class PlanillaMV(ModelView):
         ('escrutada', PlanillaMesa.escrutada)
     )
 
-    column_exclude_list = ("nulos", "blancos", "impugnados", "total_votantes")
+    column_exclude_list = ("nulos", "blancos", "impugnados", "recurridos")
 
     column_filters = ('mesa_numero', 'escrutada')
 
@@ -168,7 +188,7 @@ class PlanillaMV(ModelView):
     }
 
     form_excluded_columns = (
-        'nulos', 'blancos', 'impugnados', 'total_votantes', 'votos')
+        'nulos', 'blancos', 'impugnados', 'recurridos', 'votos')
 
     @action("Desescrutar", "Desescrutar")
     def desescrutar(self, listID):

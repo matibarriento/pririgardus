@@ -1,0 +1,4 @@
+*.pyc
+*.db
+*.zip
+__pycache__/

@@ -34,12 +34,18 @@ $(function() {
     });
 
     $('#escrutar').on("focus", function(){
-        $(this).addClass("escrutar-focus")
+        $(this).addClass("escrutar-focus");
     });
 
     $('#escrutar').on("blur", function(){
-       $(this).removeClass("escrutar-focus") 
+       $(this).removeClass("escrutar-focus");
     });
+
+    // $('#escrutar').keypress(function(e){
+    //     if(e.keyCode == 13) {
+    //         $(this).click();
+    //     }
+    // });
     
     $("#cargarPlanilla").keypress(function(e) {
         if (e.keyCode == 27) { 
@@ -57,7 +63,7 @@ $(function() {
         }
     });
 
-    $(".voto").on("focus", function(){;
+    $(".voto").on("focus", function(){
         $(this).select();
     });
 

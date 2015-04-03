@@ -5,6 +5,7 @@
     var  escrutada = '{{form.escrutada}}' == 'True';
 </script>
 {% from "helpers/_formHelpers.html" import render_field %}
+{% from "helpers/_votoFrente.html" import render_frente %}
 <table>
     <tr>
         <td>{{form.mesa_numero}}</td>
@@ -17,17 +18,18 @@
     </tr>
 </table>
 <div id="cargarPlanilla" tabindex="0">
-    <form method=post action='/'>
+    <form method=post action='/mesas'>
         {{form.planilla_id}}
         <table id="votosPlanilla" tabindex="0">
-            {% for voto in form.votos_listas %}
-                <tr>{{ render_field(voto.voto, labeled=form.escrutada, class="voto")}}</tr>
+            {% for frente in form.votos_frentes %}
+                <tr>{{ render_frente(frente, labeled=form.escrutada)}}</tr>
             {% endfor %}
+            <table>
             <tr>{{ render_field(form.nulos, labeled=form.escrutada, class="voto") }}</tr>
             <tr>{{ render_field(form.blancos, labeled=form.escrutada, class="voto") }}</tr>
             <tr>{{ render_field(form.impugnados, labeled=form.escrutada, class="voto") }}</tr>
-            <tr>{{ render_field(form.total_votantes, labeled=form.escrutada, class="voto") }}</tr>
-
+            <tr>{{ render_field(form.recurridos, labeled=form.escrutada, class="voto") }}</tr>
+            </table>
         </table>
         <p><input type=submit value="Escrutar" id="escrutar"></p>
         <p><input type=submit value="Cancelar" id="cancelar"></p>
