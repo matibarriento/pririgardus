@@ -1,0 +1,19 @@
+{% extends "_layout.html" %}
+{% block body %}
+<script type="text/javascript">
+    var urlMesas = '{{url_for("getMesas")}}';
+</script>
+<div id="selecionarMesa">
+    <div id="inputMesa">
+        <table>
+            <tr>
+                <td><input id="numero_mesa" type="text" tabindex="1"></td>
+            </tr>
+        </table>
+    </div>
+    <div id="datosMesa" tabindex="2"></div>
+</div>
+<script type="text/javascript" src='{{url_for("static", filename="js/mesas.js")}}'></script>
+<script type="text/javascript" src='{{url_for("static", filename="js/datosMesa.js")}}'></script>
+
+{% endblock %}

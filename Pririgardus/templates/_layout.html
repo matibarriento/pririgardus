@@ -20,8 +20,18 @@
                 </td>
                 <td>
                     <a href="/">Inicio</a>
-                    <a href="/admin">Administración</a>
-                    <a href="/informes">Informes</a>
+                    {% if current_user.is_authenticated() %}
+                        {% if current_user.tieneRol(roles.DataEntry)%}
+                        <a href="/mesas">Mesas</a>
+                        {% endif %}
+                        {% if current_user.tieneRol(roles.Administrador)%}
+                        <a href="/administrador">Administración</a>
+                        {% endif %}
+                        {% if current_user.tieneRol(roles.Prensa)%}
+                        <a href="/informes">Informes</a>
+                        {% endif %}
+                        <a href="/salir">Salir</a>
+                    {% endif %}
                 </td>
             </tr>
         </table>

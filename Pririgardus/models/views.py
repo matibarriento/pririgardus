@@ -1,11 +1,16 @@
 #models.view.py
-from wtforms import (Form, IntegerField, FieldList, FormField, HiddenField)
-from flask.ext.admin import BaseView, expose
+from wtforms import (
+    Form, IntegerField, FieldList, FormField, HiddenField, validators,
+    TextField, PasswordField)
+from flask.ext.admin import BaseView, expose, AdminIndexView
+from flask.ext.admin.actions import action
+from flask.ext.login import current_user
 # from flask.ext.admin.model import BaseModelView
 from flask.ext.admin.contrib.sqla import ModelView
 #from wtforms.validators import InputRequired, NumberRange
 from models.constantes import VOTO_NAME_PREFIX
-from models.models import PlanillaMesa, Cargo, TipoCargo, db
+from models.models import (db, PlanillaMesa, Cargo, TipoCargo,
+                           Usuario, Roles, Lista)
 
 
 class AttrDict(dict):
@@ -85,9 +90,34 @@ class CargarPlanilla(Form):
             planilla.impugnados is not None) else 0
         self.total_votantes.data = planilla.total_votantes if (
             planilla.total_votantes is not None) else 0
-        for votolista in planilla.votos.all():
+        for votolista in planilla.votos.join(Lista).order_by(
+                Lista.posicionFrente, Lista.posicionLista).all():
             self.votos_listas.entries.append(VotoLista(votolista))
         self.escrutada = planilla.escrutada
+
+
+class Administrador(AdminIndexView):
+
+    """docstring for Administrador"""
+
+    @expose('/')
+    def index(self):
+        return self.render('/admin')
+
+    def is_accessible(self):
+        return current_user.tieneRol(Roles.Administrador)
+
+    def __init__(self, name=None, category=None,
+                 endpoint=None, url=None,
+                 template='admin/index.html'):
+        super(Administrador, self).__init__(name=name, category=category,
+                                            endpoint=endpoint, url=url,
+                                            template=template)
+        self.name = name
+        self.category = category
+        self.endpoint = endpoint
+        self.url = url
+        self.template = template
 
 
 class Exportar(BaseView):
@@ -98,10 +128,25 @@ class Exportar(BaseView):
             TipoCargo.cargos).order_by(Cargo.id.desc()).all()
         return self.render('exportar.html', tiposCargo=tiposCargo)
 
+    def is_accessible(self):
+        return current_user.tieneRol(Roles.Administrador) and current_user.is_authenticated()
+
+
+class UsuarioMV(ModelView):
+
+    column_exclude_list = ("contraseña")
+
+    def is_accessible(self):
+        return current_user.tieneRol(Roles.Administrador) and current_user.is_authenticated()
+
+    def __init__(self, session, **kwargs):
+        super(UsuarioMV, self).__init__(Usuario, session, **kwargs)
+
 
 class PlanillaMV(ModelView):
     can_create = False
     can_delete = False
+    can_edit = False
 
     column_sortable_list = (
         ('mesa', PlanillaMesa.mesa_numero),
@@ -110,16 +155,8 @@ class PlanillaMV(ModelView):
     )
 
     column_exclude_list = ("nulos", "blancos", "impugnados", "total_votantes")
-    
-    # column_searchable_list = (PlanillaMesa.mesa_numero)
 
     column_filters = ('mesa_numero', 'escrutada')
-
-    # column_choices = {
-    #     'cargo': [
-    #         ('db_value', 'display_value'),
-    #     ]
-    # }
 
     form_widget_args = {
         'mesa': {
@@ -133,6 +170,36 @@ class PlanillaMV(ModelView):
     form_excluded_columns = (
         'nulos', 'blancos', 'impugnados', 'total_votantes', 'votos')
 
+    @action("Desescrutar", "Desescrutar")
+    def desescrutar(self, listID):
+        for planilla_id in listID:
+            planilla = db.session.query(PlanillaMesa).filter(
+                PlanillaMesa.id == planilla_id).first()
+            if planilla:
+                planilla.escrutada = False
+                db.session.add(planilla)
+        db.session.commit()
+
+    def is_accessible(self):
+        return current_user.tieneRol(Roles.Administrador) and current_user.is_authenticated()
+
     def __init__(self, session, **kwargs):
-        # You can pass name and other parameters if you want to
         super(PlanillaMV, self).__init__(PlanillaMesa, session, **kwargs)
+
+
+class LoginForm(Form):
+
+    usuario = TextField(validators=[validators.required()])
+    password = PasswordField(validators=[validators.required()])
+
+    def validate_login(self):
+        usuario = self.get_user()
+        if usuario is None:
+            raise validators.ValidationError('Invalid user')
+        if not usuario.contraseña == self.password.data:
+            raise validators.ValidationError('Invalid password')
+        return True
+
+    def get_user(self):
+        return db.session.query(Usuario).filter(
+            Usuario.usuario == self.usuario.data).first()

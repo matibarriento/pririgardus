@@ -255,7 +255,7 @@ class TipoCargo(db.Model):
     def __init__(self, descripcion='', alcance_cargo=''):
         self.descripcion = descripcion
         try:
-            self.alcance_cargo = AlcanceCargo[alcance_cargo].name
+            self.alcance_cargo = alcance_cargo.name
         except KeyError:
             raise Exception
 
@@ -606,6 +606,9 @@ class Usuario(db.Model):
     def get_id(self):
         return self.id
 
+    def tieneRol(self, rol):
+        return rol.name in [r.descripcion for r in self.roles]
+
 
 class Roles(Enum):
 
@@ -626,8 +629,8 @@ class Rol(db.Model):
 
     def __init__(self, rol=''):
         try:
-            self.id = int(Roles[rol].value)
-            self.descripcion = Roles[rol].name
+            self.id = rol.value
+            self.descripcion = rol.name
         except KeyError:
             raise KeyError
 

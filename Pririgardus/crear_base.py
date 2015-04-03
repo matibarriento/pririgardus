@@ -6,39 +6,39 @@ db.create_all()
 db.session.add(
     TipoCargo(
         descripcion='Presidencia',
-        alcance_cargo=AlcanceCargo.Cargo_Nacional.name))
+        alcance_cargo=AlcanceCargo.Cargo_Nacional))
 db.session.add(
     TipoCargo(
         descripcion='Diputado Nacional',
-        alcance_cargo=AlcanceCargo.Cargo_Nacional.name))
+        alcance_cargo=AlcanceCargo.Cargo_Nacional))
 db.session.add(
     TipoCargo(
         descripcion='Senado Provincial',
-        alcance_cargo=AlcanceCargo.Cargo_Provincial.name))
+        alcance_cargo=AlcanceCargo.Cargo_Provincial))
 db.session.add(
     TipoCargo(
         descripcion='Gobernación Provincial',
-        alcance_cargo=AlcanceCargo.Cargo_Provincial.name))
+        alcance_cargo=AlcanceCargo.Cargo_Provincial))
 db.session.add(
     TipoCargo(
         descripcion='Diputado Provincial',
-        alcance_cargo=AlcanceCargo.Cargo_Provincial.name))
+        alcance_cargo=AlcanceCargo.Cargo_Provincial))
 db.session.add(
     TipoCargo(
         descripcion='Senado Departamental',
-        alcance_cargo=AlcanceCargo.Cargo_Departamental.name))
+        alcance_cargo=AlcanceCargo.Cargo_Departamental))
 db.session.add(
     TipoCargo(
         descripcion='Intendencia',
-        alcance_cargo=AlcanceCargo.Cargo_Local.name))
+        alcance_cargo=AlcanceCargo.Cargo_Local))
 db.session.add(
     TipoCargo(
         descripcion='Concejo',
-        alcance_cargo=AlcanceCargo.Cargo_Local.name))
+        alcance_cargo=AlcanceCargo.Cargo_Local))
 
-administrador = Rol(Roles.Administrador.name)
-dataEntry = Rol(Roles.DataEntry.name)
-prensa = Rol(Roles.Prensa.name)
+administrador = Rol(Roles.Administrador)
+dataEntry = Rol(Roles.DataEntry)
+prensa = Rol(Roles.Prensa)
 
 db.session.add_all([administrador, dataEntry, prensa])
 db.session.commit()

@@ -1,19 +1,21 @@
 {% extends "_layout.html" %}
 {% block body %}
-<script type="text/javascript">
-    var urlMesas = '{{url_for("getMesas")}}';
-</script>
-<div id="selecionarMesa">
-    <div id="inputMesa">
-        <table>
-            <tr>
-                <td><input id="numero_mesa" type="text" tabindex="1"></td>
-            </tr>
-        </table>
-    </div>
-    <div id="datosMesa" tabindex="2"></div>
+{% from "helpers/_formHelpers.html" import render_field %}
+{% if not current_user.is_authenticated() %}
+<div id="login" tabindex="0">
+    <form method=post action='/'>
+    <table>
+        <tr>
+            <td>{{ render_field(form.usuario)}}</td>
+        </tr>
+        <tr>
+            <td>{{ render_field(form.password)}}</td>
+        </tr>
+    </table>
+    <p><input type=submit value="Ingresar" id="ingresar"></p>
+    </form>
 </div>
-<script type="text/javascript" src='{{url_for("static", filename="js/index.js")}}'></script>
-<script type="text/javascript" src='{{url_for("static", filename="js/datosMesa.js")}}'></script>
-
+{% else %}
+<h2>Bienvenido</h2>
+{% endif %}
 {% endblock %}

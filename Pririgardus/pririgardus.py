@@ -5,11 +5,15 @@ import logging
 from flask import (Flask, render_template, jsonify, request, url_for, redirect)
 from werkzeug.contrib.fixers import ProxyFix
 from flask.ext.admin import Admin
-from flask.ext.login import LoginManager
+from flask.ext.login import (
+    LoginManager, login_required, login_user, logout_user)
 from logica import parsearPlanilla, exportarPlanilla
 from models.models import (db, Mesa, PlanillaMesa, TipoCargo, AlcanceCargo,
-                           Cargo, Frente, Lista, Usuario)
-from models.views import DatosMesa, CargarPlanilla, Exportar, PlanillaMV
+                           Cargo, Frente, Lista, Usuario, Roles)
+from models.views import (
+    DatosMesa, CargarPlanilla, Exportar,
+    PlanillaMV, LoginForm, UsuarioMV, Administrador)
+from helpers import requires_roles
 
 # NOMBRE_BASE_DATOS = 'pririgardus.db'
 app = Flask(__name__)
@@ -17,10 +21,10 @@ app.config.from_object('config')
 db.init_app(app)
 db.app = app
 # base_template="_layout.html"
-admin = Admin(app)
+admin = Admin(app)#, index_view=Administrador, endpoint=None)
 login_manager = LoginManager()
 login_manager.init_app(app)
-
+login_manager.login_view = "/"
 # parser = argparse.ArgumentParser(description='Pririgardus Arguments Parser')
 # parser.add_argument('-l', '--logging', help='logging', action='store_true')
 # parser.add_argument('-d', '--debug', help='debug', action='store_true')
@@ -35,12 +39,29 @@ handler.setFormatter(formatter)
 # if(argv.logging):
 logger.addHandler(handler)
 app.config['LOGGER_NAME'] = logger.name
+app.jinja_env.globals['roles'] = Roles
+
+###########################################################################
+
+# Para configuraciones ###
+
+
+@login_manager.user_loader
+def load_user(userid):
+    return db.session.query(Usuario).filter(
+        Usuario.id == userid).first()
 
 admin.add_view(Exportar(
-    name='Exportar', endpoint='ExportarPlanilla', category='Planilla'))
+    name='Exportar', endpoint='exportarPlanilla', category='Planilla'))
 admin.add_view(PlanillaMV(
     db.session,
-    name='Planillas', endpoint='ListaPlanillas', category='Planilla'))
+    name='Planillas', endpoint='listaPlanillas', category='Planilla'))
+
+admin.add_view(UsuarioMV(
+   db.session,
+   name='Usuarios', endpoint='Usuarios', category='Usuarios'))
+
+###########################################################################
 
 # Para autocompetados ###
 
@@ -113,10 +134,34 @@ def getDatosMesa(numero_mesa):
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
-    return render_template("index.html")
+    if request.method in ('GET', None):
+        form = LoginForm()
+    elif request.method == 'POST':
+        form = LoginForm(request.form)
+        if(form.validate_login()):
+            usuario = form.get_user()
+            login_user(usuario)
+            return redirect(request.args.get("next") or url_for("index"))
+    return render_template("index.html", form=form)
 
 
+@login_required
+@app.route("/mesas", methods=['GET', 'POST'])
+@requires_roles(Roles.DataEntry.name)
+def mesas():
+    return render_template("mesas.html")
+
+
+@login_required
+@app.route("/administrador")
+@requires_roles(Roles.Administrador.name)
+def administrador():
+    return redirect("/admin")
+
+
+@login_required
 @app.route("/informes", methods=['GET', 'POST'])
+@requires_roles(Roles.Prensa.name)
 def informes():
     tiposCargo = db.session.query(TipoCargo).join(
         TipoCargo.cargos).order_by(Cargo.id.desc()).all()
@@ -155,17 +200,16 @@ def ExportarPlanilla(cargo_id):
 def Filtrar(cargo_id):
     exportarPlanilla(cargo_id)
 
-###########################################################################
 
-# Para configuraciones ###
-
-
-@login_manager.user_loader
-def load_user(userid):
-    return db.session.query(Usuario).filter(
-        Usuario.id == userid).first()
+@login_required
+@app.route("/salir")
+def salir():
+    logout_user()
+    form = LoginForm()
+    return render_template("index.html", form=form)
 
 ###########################################################################
+
 
 app.wsgi_app = ProxyFix(app.wsgi_app)
 
@@ -177,8 +221,8 @@ if __name__ == "__main__":
     except OSError as ose:
         pass
         # print(
-        #     "Puerto en uso,por favor selecione \
+        #     "Puerto en uso,por favor selecione
         #     uno usando -p [port] excepto {0}".format(
         #         argv.port))
-        # print("Tal vez apreto Ctrl+Z para detener el servidor\
+        # print("Tal vez apreto Ctrl+Z para detener el servidor
         #       ...si no lo sabe usted xD")
