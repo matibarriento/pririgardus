@@ -1,5 +1,6 @@
 {% extends "_layout.html" %}
 {% block body %}
+<script type="text/javascript" src="/static/js/lib/autoNumeric.min.js" ></script>
 <script type="text/javascript">
     var urlPlanilla = '{{url_for("Planilla",planilla_id=form.planilla_id.data)}}';
     var  escrutada = '{{form.escrutada}}' == 'True';

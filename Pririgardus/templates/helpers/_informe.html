@@ -1,10 +1,48 @@
 {% extends "_layout.html" %}
 {% block body %}
 <script type="text/javascript">
-
+    var urlAlcances = '{{url_for("getAlcanceTipoCargo")}}';
+    var urlFrentes = '{{url_for("getFrentesCargo")}}';
+    var urlInforme= '{{url_for("getInforme")}}';
 </script>
 <div id="filtros">
-    {% include "helpers/_filtroCargos.html"%}
+    <form method="GET" action="/">
+        <table>
+            <tr>
+                <td>
+                    <label>Cargo</label>
+                    <select id="tipoCargo">
+                        <option value="0">Seleccione</option>
+                    {% for tipo in tiposCargo %}
+                        <option value="{{ tipo.id }}">{{ tipo.descripcion }}</option>
+                    {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <label>Lugar</label>
+                    <input id="cargoID" type="hidden">
+                    <input id="alcanceCargo" type="text" tabindex="3">
+                </td>
+                <td>
+                    <label>Frente</label>
+                    <input id="frenteID" type="hidden">
+                    <input id="frentes" type="text" tabindex="3">
+                </td>
+                <td>
+                    <p><input type=submit value="Informe" id="informe"></p>
+                </td>
+                <td>
+                    <label>Gráfico</label>
+                    <select id="tipoGrafico">
+                        <option value="0">Columnas</option>
+                        <option value="1">Torta</option>
+                    </select>
+                </td>
+            </tr>
+    </form>
 </div>
-
+<div id="graficoInforme">
+    
+</div>
+<script type="text/javascript" src='{{url_for("static", filename="js/informe.js")}}'></script>
 {% endblock %}

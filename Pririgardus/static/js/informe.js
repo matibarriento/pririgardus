@@ -2,30 +2,20 @@ $(function() {
 
     crearAutocompletado($("#alcanceCargo"), $("#cargoID"), false);
     crearAutocompletado(("#frentes"), $("#frenteID"), true);
-    crearAutocompletado($("#listas"), $("#listaID"), true);
 
-    $('#filtrar').click(function(e) {
-            // e.preventDefault();
-            // $.ajax({
-            //     url: urlFiltar + "/" + $("#cargoID").val(),
-            //     type: 'POST',
-            //     success: function(response) {
-            //         return false;
-            //     },
-            //     error: function(error) {
-            //         console.log(error);
-            //     }
-            // });
+    $('#informe').click(function(e) {
+            $("#graficoInforme").load(
+                urlInforme +"/" + $("#tipoCargo").val() + "/" + $("#cargoID").val()+ "/" + $("#frenteID").val() + "/" + $("#tipoGrafico").val());
+            e.preventDefault();
         });
     
 
-    Anidado($("#tipoCargo"), $("#alcanceCargo"), $("#cargoID"), $("#filtrar"));
-    Anidado($("#cargoID"), $("#frentes"), $("#frenteID"), $("#filtrar"));
-    Anidado($("#frenteID"), $("#listas"), $("#listaID"), null);
+    Anidado($("#tipoCargo"), $("#alcanceCargo"), $("#cargoID"), $("#informe"));
+    Anidado($("#cargoID"), $("#frentes"), $("#frenteID"), $("#informe"));
     
     $("#tipoCargo").on("change", function()
     {
-        var tieneValor = Anidado($("#tipoCargo"), $("#alcanceCargo"), $("#cargoID"), $("#filtrar"));
+        var tieneValor = Anidado($("#tipoCargo"), $("#alcanceCargo"), $("#cargoID"), $("#informe"));
         if(tieneValor){
             getAlcanceCargos($("#tipoCargo").val());
         }
@@ -33,24 +23,16 @@ $(function() {
 
     $("#alcanceCargo").on("change", function()
     {
-        var tieneValor = Anidado($("#cargoID"), $("#frentes"), $("#frenteID"), $("#filtrar"));
+        var tieneValor = Anidado($("#cargoID"), $("#frentes"), $("#frenteID"), $("#informe"));
         if(tieneValor){
             getFrentes($("#cargoID").val());
-        }
-    });
-
-    $("#frentes").on("change", function()
-    {
-        var tieneValor = Anidado($("#frenteID"), $("#listas"), $("#listaID"), null);
-        if(tieneValor){
-            getListas($("#frenteID").val(), $("#cargoID").val());
         }
     });
 
 });
 
 function Anidado(controlPadre, controlHijo, controlIDHijo, controlSubmit){
-    var tieneValor = $.inArray($(controlPadre).val(), [0,'0', '']) == -1;
+    var tieneValor = $.inArray($(controlPadre).val(), [0,'0', "0", '', "undefined"]) == -1;
     if(tieneValor){
         $(controlHijo).prop("disabled", false);
         $(controlSubmit).prop("disabled", false);
@@ -101,21 +83,6 @@ function getFrentes(cargo_id){
         valorDefault = findLabel(frentes, 0);
         $("#frentes").val(valorDefault);
         $("#frentes").trigger("change");
-    });
-}
-
-function getListas(frente_id, cargo_id){
-    $.getJSON(urlListas+ "/" + frente_id + "/" + cargo_id, function (data) {
-        var listas = $.map(data, function (value, key) {
-            return {
-                label: value,
-                value: key
-            };
-        });
-        $("#listas").autocomplete("option", "source", listas);
-        valorDefault = findLabel(listas, 0);
-        $("#listas").val(valorDefault);
-        $("#listas").trigger("change");
     });
 }
 

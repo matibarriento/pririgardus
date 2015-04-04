@@ -7,7 +7,9 @@ from werkzeug.contrib.fixers import ProxyFix
 from flask.ext.admin import Admin
 from flask.ext.login import (
     LoginManager, login_required, login_user, logout_user)
-from logica import parsearPlanilla, exportarPlanilla
+import json
+from logica import (parsearPlanilla, exportarPlanilla,
+                    cantidadMesasExcrutadas, datosInforme)
 from models.models import (db, Mesa, PlanillaMesa, TipoCargo, AlcanceCargo,
                            Cargo, Frente, Lista, Usuario, Roles)
 from models.views import (
@@ -63,7 +65,7 @@ admin.add_view(UsuarioMV(
 
 ###########################################################################
 
-# Para autocompetados ###
+# Para autocompetados y graficos ###
 
 
 @app.route("/getMesas")
@@ -77,22 +79,22 @@ def getMesas():
 def getAlcanceTipoCargo(tipo_cargo_id):
     tipoCargo = db.session.query(TipoCargo).filter(
         TipoCargo.id == tipo_cargo_id).first()
+    response = []
     if tipoCargo is not None:
         cargo = tipoCargo.cargos.all()
         if(tipoCargo.alcance_cargo == AlcanceCargo.Cargo_Local.name):
-            return jsonify([
-               (str(c.id), str(c.alcance.getFullRepr())) for c in cargo])
+            response.extend([
+               (c.id, str(c.alcance.getFullRepr())) for c in cargo])
         elif(tipoCargo.alcance_cargo == AlcanceCargo.Cargo_Departamental.name):
-            return jsonify([
-               (str(c.id), str(c.alcance.getFullRepr())) for c in cargo])
+            response.extend([
+               (c.id, str(c.alcance.getFullRepr())) for c in cargo])
         elif(tipoCargo.alcance_cargo == AlcanceCargo.Cargo_Provincial.name):
-            return jsonify([
-               (str(c.id), str(c.alcance.descripcion)) for c in cargo])
+            response.extend([
+               (c.id, str(c.alcance.descripcion)) for c in cargo])
         elif(tipoCargo.alcance_cargo == AlcanceCargo.Cargo_Nacional.name):
-            return jsonify([
-               (str(c.id), str(c.alcance.descripcion)) for c in cargo])
-    else:
-        return jsonify([])
+            response.extend([
+               (c.id, str(c.alcance.descripcion)) for c in cargo])
+    return jsonify(response)
 
 
 @app.route("/getFrentesCargo")
@@ -106,15 +108,11 @@ def getFrentesCargo(cargo_id):
     return jsonify(response)
 
 
-@app.route("/getListasFrenteCargo")
-@app.route("/getListasFrenteCargo/<frente_id>/<cargo_id>")
-def getListasFrenteCargo(frente_id, cargo_id):
-    listas = db.session.query(Lista).filter(
-        Lista.cargo_id == cargo_id, Lista.frente_id == frente_id).all()
-    response = [(0, "Todas")]
-    for lista in listas:
-        response.append((lista.id, lista.descripcion))
-    return jsonify(response)
+@app.route("/getDatosGrafico")
+@app.route("/getDatosGrafico/<tipo_cargo_id>/<cargo_id>/<frente_id>")
+def getDatosGrafico(tipo_cargo_id, cargo_id, frente_id):
+    return jsonify(datosInforme(int(tipo_cargo_id),
+                                int(cargo_id), int(frente_id)))
 
 ###########################################################################
 
@@ -127,6 +125,17 @@ def getDatosMesa(numero_mesa):
     datosMesa = DatosMesa(mesa)
     return render_template("helpers/_datosMesa.html", datosMesa=datosMesa)
 
+
+@app.route("/getInforme")
+@app.route("/getInforme/<tipo_cargo_id>/<cargo_id>/<frente_id>/<tipo_grafico>",
+           methods=['GET'])
+def getInforme(tipo_cargo_id, cargo_id, frente_id, tipo_grafico):
+    mesasEscrutadas = cantidadMesasExcrutadas(int(cargo_id))
+    return render_template("helpers/_graficoInforme.html",
+                           mesasEscrutadas=mesasEscrutadas,
+                           tipo_cargo_id=tipo_cargo_id, cargo_id=cargo_id,
+                           frente_id=frente_id, tipo_grafico=tipo_grafico)
+
 ###########################################################################
 
 # Pantallas y submits ###
@@ -138,10 +147,13 @@ def index():
         form = LoginForm()
     elif request.method == 'POST':
         form = LoginForm(request.form)
-        if(form.validate_login()):
+        try:
+            form.validate_login()
             usuario = form.get_user()
             login_user(usuario)
             return redirect(request.args.get("next") or url_for("index"))
+        except Exception as e:
+            logger.log(logging.ERROR, e)
     return render_template("index.html", form=form)
 
 
@@ -192,12 +204,6 @@ def Planilla(planilla_id):
 @app.route("/Exportar")
 @app.route("/Exportar/<tipo_cargo_id>/<cargo_id>", methods=['POST'])
 def ExportarPlanilla(cargo_id):
-    exportarPlanilla(cargo_id)
-
-
-@app.route("/Filtrar")
-@app.route("/Filtrar/<tipo_cargo_id>/<cargo_id>", methods=['POST'])
-def Filtrar(cargo_id):
     exportarPlanilla(cargo_id)
 
 

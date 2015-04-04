@@ -2,6 +2,8 @@ var mesas;
 $(function() {
     $("#numero_mesa").focus();
     $("#numero_mesa").val('');
+    $("#numero_mesa").autoNumeric('init', {
+        aSep: '', aDec: ',', vMin: '0', mDec: '0'});
     $("#numero_mesa").autocomplete({
         source: function (request, response) {
             getNumerosMesa(request, response);

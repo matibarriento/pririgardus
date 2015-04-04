@@ -1,5 +1,5 @@
 #logica.py
-from models.models import db, PlanillaMesa, VotoListaMesa, Cargo
+from models.models import (db, PlanillaMesa, VotoListaMesa, Cargo, Frente)
 from models.constantes import VOTO_NAME_PREFIX, VALIDACION_PLANILLA
 
 
@@ -41,4 +41,28 @@ def validarForm(planilla, planilla_form):
 
 
 def exportarPlanilla(cargo_id):
-    cargo = Cargo.query.filter(Cargo.id == 2).first()
+    pass
+    # cargo = Cargo.query.filter(Cargo.id == 2).first()
+
+
+def cantidadMesasExcrutadas(cargo_id):
+    cargo = Cargo.query.filter(Cargo.id == cargo_id).first()
+    totales = cargo.planillas.count()
+    escrutadas = cargo.planillas.filter(PlanillaMesa.escrutada).count()
+
+    if totales == 0 or escrutadas == 0:
+        return 0
+    else:
+        return round(escrutadas / totales, 3)
+
+
+def datosInforme(tipo_cargo_id, cargo_id, frente_id):
+    if frente_id == 0:
+        pass
+    else:
+        frente = Frente.query.get(frente_id)
+        listas_frente = frente.listas.join(
+            Cargo).filter(Cargo.id == cargo_id).all()
+        return [
+            (str(lista.descripcion), lista.Votos_Lista())
+            for lista in listas_frente]

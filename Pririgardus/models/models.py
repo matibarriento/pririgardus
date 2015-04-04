@@ -310,6 +310,12 @@ class Lista(db.Model):
     def __repr__(self):
         return str.upper(self.frente.descripcion + ' - ' + self.descripcion)
 
+    def Votos_Lista(self):
+        total = 0
+        for voto in self.votos:
+            total += voto.votos
+        return total
+
     def Actualizar_VotoLista(self):
         mesas = self.cargo.alcance.getMesas()
         planillas = []
@@ -366,6 +372,7 @@ class Cargo_Local(Cargo):
     alcance = db.relationship('Localidad', backref=db.backref(
         'cargos', lazy='dynamic'))
     #propiedad 'listas' para obtener sus hijas
+    #propiedad 'planillas' para obtener sus hijas
 
     __mapper_args__ = {
         'polymorphic_identity': AlcanceCargo.Cargo_Local.name,
@@ -405,6 +412,7 @@ class Cargo_Departamental(Cargo):
     alcance = db.relationship('Departamento', backref=db.backref(
         'cargos', lazy='dynamic'))
     #propiedad 'listas' para obtener sus hijas
+    #propiedad 'planillas' para obtener sus hijas
 
     __mapper_args__ = {
         'polymorphic_identity': AlcanceCargo.Cargo_Departamental.name,
@@ -444,6 +452,7 @@ class Cargo_Provincial(Cargo):
     alcance = db.relationship('Provincia', backref=db.backref(
         'cargos', lazy='dynamic'))
     #propiedad 'listas' para obtener sus hijas
+    #propiedad 'planillas' para obtener sus hijas
 
     __mapper_args__ = {
         'polymorphic_identity': AlcanceCargo.Cargo_Provincial.name,
@@ -482,6 +491,7 @@ class Cargo_Nacional(Cargo):
     alcance = db.relationship('Pais', backref=db.backref(
         'cargos', lazy='dynamic'))
     #propiedad 'listas' para obtener sus hijas
+    #propiedad 'planillas' para obtener sus hijas
 
     __mapper_args__ = {
         'polymorphic_identity': AlcanceCargo.Cargo_Nacional.name,
@@ -516,10 +526,10 @@ class PlanillaMesa(db.Model):
 
     __tablename__ = "PlanillaMesa"
     id = db.Column(db.Integer, primary_key=True)
-    nulos = db.Column(db.Integer, nullable=True)
-    blancos = db.Column(db.Integer, nullable=True)
-    impugnados = db.Column(db.Integer, nullable=True)
-    recurridos = db.Column(db.Integer, nullable=True)
+    nulos = db.Column(db.Integer, default=0)
+    blancos = db.Column(db.Integer, default=0)
+    impugnados = db.Column(db.Integer, default=0)
+    recurridos = db.Column(db.Integer, default=0)
     escrutada = db.Column(db.Boolean, default=False)
     mesa_numero = db.Column(db.Integer, db.ForeignKey('Mesa.numero'))
     mesa = db.relationship('Mesa', backref=db.backref(
@@ -538,6 +548,18 @@ class PlanillaMesa(db.Model):
         return str.upper('Planilla de mesa ' +
                          str(self.mesa.numero) +
                          ' - ' + self.cargo.descripcion)
+
+    def Total_Votos(self):
+        total = self.nulos + self.blancos + self.impugnados + self.recurridos
+        for voto in self.votos:
+            total += voto.votos
+        return total
+
+    def Total_Votos_Validos(self):
+        total = self.blancos
+        for voto in self.votos:
+            total += voto.votos
+        return total
 
     def Actualizar_VotoLista(self):
         listas = self.cargo.listas.all()
@@ -566,7 +588,7 @@ class VotoListaMesa(db.Model):
 
     __tablename__ = "VotoListaMesa"
     id = db.Column(db.Integer, primary_key=True)
-    votos = db.Column(db.Integer, nullable=True)
+    votos = db.Column(db.Integer, default=0)
     descripcion = db.Column(db.String(100))
     planilla_mesa_id = db.Column(
         db.Integer, db.ForeignKey('PlanillaMesa.id'))

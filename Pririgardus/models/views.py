@@ -59,8 +59,7 @@ class VotoLista(Form):
         self.voto.name = VOTO_NAME_PREFIX + str(votolista.id)
         self.voto.label = "{0} - {1}".format(
             votolista.lista.posicionLista, votolista.lista.descripcion)
-        self.voto.data = votolista.votos if (
-            votolista.votos is not None) else 0
+        self.voto.data = votolista.votos
 
 
 class VotoFrente(Form):
@@ -100,14 +99,10 @@ class CargarPlanilla(Form):
             repr(planilla.mesa.escuela.circuito))
         self.cargo = repr(planilla.cargo.tipo_cargo)
         self.cargo_id = planilla.cargo_id
-        self.nulos.data = planilla.nulos if (
-            planilla.nulos is not None) else 0
-        self.blancos.data = planilla.blancos if (
-            planilla.blancos is not None) else 0
-        self.impugnados.data = planilla.impugnados if (
-            planilla.impugnados is not None) else 0
-        self.recurridos.data = planilla.recurridos if (
-            planilla.recurridos is not None) else 0
+        self.nulos.data = planilla.nulos
+        self.blancos.data = planilla.blancos
+        self.impugnados.data = planilla.impugnados
+        self.recurridos.data = planilla.recurridos
         for frente in planilla.getFrentes():
             self.votos_frentes.entries.append(VotoFrente(frente, planilla))
         # for votolista in planilla.votos.join(Lista).order_by(
@@ -218,7 +213,6 @@ class LoginForm(Form):
             raise validators.ValidationError('Invalid user')
         if not usuario.contraseña == self.password.data:
             raise validators.ValidationError('Invalid password')
-        return True
 
     def get_user(self):
         return db.session.query(Usuario).filter(

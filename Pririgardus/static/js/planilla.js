@@ -63,6 +63,9 @@ $(function() {
         }
     });
 
+    $(".voto").autoNumeric('init', {
+        aSep: '', aDec: ',', vMin: '0', mDec: '0', wEmpty: 'zero'});
+
     $(".voto").on("focus", function(){
         $(this).select();
     });
