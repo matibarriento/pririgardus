@@ -1,5 +1,7 @@
 #logica.py
-from models.models import (db, PlanillaMesa, VotoListaMesa, Cargo, Frente)
+from flask.ext.login import current_user
+from models.models import (
+    db, PlanillaMesa, VotoListaMesa, Cargo, Frente, Lista)
 from models.constantes import VOTO_NAME_PREFIX, VALIDACION_PLANILLA
 
 
@@ -9,8 +11,9 @@ def parsearPlanilla(planilla_id, planilla_form):
         PlanillaMesa.id == planilla_id).first()
     if not validarForm(planilla, planilla_form):
         raise Exception("Planilla invalida")
-    for item in VALIDACION_PLANILLA:
-        setattr(planilla, item, int(pf[item][0]))
+    if len(current_user.frentes) == 0:
+        for item in VALIDACION_PLANILLA:
+            setattr(planilla, item, int(pf[item][0]))
     for keys, value in pf.items():
         if keys.__contains__(VOTO_NAME_PREFIX):
             voto_id = keys.replace(VOTO_NAME_PREFIX, '')
@@ -23,21 +26,25 @@ def parsearPlanilla(planilla_id, planilla_form):
 
 
 def validarForm(planilla, planilla_form):
-
     pf = dict(planilla_form)
-    cant_votos_form = (
-        len([
-            (keys, value)
-            for keys, value in pf.items()
-            if keys.__contains__(VOTO_NAME_PREFIX)
-        ]) == len(planilla.votos.all()))
-    if not cant_votos_form:
-        return cant_votos_form
-    for item in VALIDACION_PLANILLA:
-        if not pf.keys().__contains__(item):
-            return False
+    cant_votos_form = len(
+        [(keys, value)
+            for keys, value
+            in pf.items()
+            if keys.__contains__(VOTO_NAME_PREFIX)])
+    cant_votos_frente_usuario = len([
+        voto
+        for voto
+        in planilla.votos.all()
+        if voto.lista.frente in current_user.frentes
+        or len(current_user.frentes) == 0])
+    if not cant_votos_form == cant_votos_frente_usuario:
+        return False
+    if len(current_user.frentes) == 0:
+        for item in VALIDACION_PLANILLA:
+            if not pf.keys().__contains__(item):
+                return False
     return True
-    pass
 
 
 def exportarPlanilla(cargo_id):
@@ -56,9 +63,13 @@ def cantidadMesasExcrutadas(cargo_id):
         return round(escrutadas / totales, 3)
 
 
-def datosInforme(tipo_cargo_id, cargo_id, frente_id):
+def datosInforme(cargo_id, frente_id):
     if frente_id == 0:
-        pass
+        frentes = Frente.query.join(Lista).filter(
+            Lista.cargo_id == cargo_id).all()
+        return [
+            (str(frente.descripcion), frente.Votos_Frente(cargo_id))
+            for frente in frentes]
     else:
         frente = Frente.query.get(frente_id)
         listas_frente = frente.listas.join(

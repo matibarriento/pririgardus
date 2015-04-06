@@ -4,17 +4,25 @@
 <script type="text/javascript">
     var urlMesas = '{{url_for("getMesas")}}';
 </script>
-<div id="selecionarMesa">
-    <div id="inputMesa">
-        <table>
-            <tr>
-                <td><input id="numero_mesa" type="text" tabindex="1"></td>
-            </tr>
-        </table>
+<div class="col-md-9 column">
+    <div id="selecionarMesa" class="row clearfix">
+        <div id="inputMesa" class="col-md-2 column">
+            <table>
+                <tr>
+                    <td><input id="numero_mesa" class="form-control input-sm" type="text" tabindex="1"></td>
+                </tr>
+            </table>
+        </div>
+        <div id="datosMesa" tabindex="2" class="col-md-10 column">
+            
+        </div>
     </div>
-    <div id="datosMesa" tabindex="2"></div>
 </div>
 <script type="text/javascript" src='{{url_for("static", filename="js/mesas.js")}}'></script>
-<script type="text/javascript" src='{{url_for("static", filename="js/datosMesa.js")}}'></script>
 
+{% endblock %}
+{% block ayuda %}
+<div class="col-md-3 column">
+    <p>Ayuda para esta pantalla</p>
+</div>
 {% endblock %}

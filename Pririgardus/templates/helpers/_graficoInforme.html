@@ -1,33 +1,34 @@
 <script type="text/javascript">
-    var Chartkick = {"language": "spa"};
+    var Chartkick = {"language": "es"};
     var urlDatosGrafico = '{{url_for("getDatosGrafico")}}';
-    var datoGraficos;
-    var tipo_cargo_id = '{{tipo_cargo_id}}';
     var cargo_id = '{{cargo_id}}';
     var frente_id = '{{frente_id}}';
     var tipo_grafico = '{{tipo_grafico}}';
+    var datoGraficos;
 </script>
 <script type="text/javascript" src="/static/js/lib/google-charts-jsapi.js" ></script>
 <script type="text/javascript" src="/static/js/lib/chartkick.js" ></script>
 <div>
-    <h1>Mesas escrutadas = {{mesasEscrutadas}} %</h1>
+    <h1>Mesas escrutadas: {{mesasEscrutadas}} %</h1>
+    <h3>Hora de informe: {{momentoInforme}}</h3>
     <div id="grafico" style="height:600px"></div>
 </div>
 
 <script type="text/javascript">
 $(function() {
     getDatosGrafico();
-    if(tipo_grafico == '0'){
-        new Chartkick.ColumnChart("grafico", datoGraficos);
-    }
-    if(tipo_grafico == '1'){
-        new Chartkick.PieChart("grafico", datoGraficos );
-    }
+
 });
 
 function getDatosGrafico(){
-        $.getJSON(urlDatosGrafico + "/" + tipo_cargo_id+ "/" + cargo_id+ "/" + frente_id, function (data) {
+        $.getJSON(urlDatosGrafico + "/" + cargo_id+ "/" + frente_id, function (data) {
                 datoGraficos = data;
         });
+        if(tipo_grafico == '0'){
+            new Chartkick.ColumnChart("grafico", datoGraficos);
+        }
+        if(tipo_grafico == '1'){
+            new Chartkick.PieChart("grafico", datoGraficos );
+        }
     }
 </script>

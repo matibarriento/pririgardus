@@ -280,6 +280,13 @@ class Frente(db.Model):
     def __repr__(self):
         return str.upper(self.descripcion)
 
+    def Votos_Frente(self, cargo_id):
+        total = 0
+        for lista in self.listas:
+            if lista.cargo_id == cargo_id:
+                total += lista.Votos_Lista()
+        return total
+
 
 class Lista(db.Model):
 
@@ -577,7 +584,8 @@ class PlanillaMesa(db.Model):
         frentes = []
         [frentes.append(voto.lista.frente)
             for voto in self.votos.join(Lista).order_by(Lista.posicionFrente)
-            if voto.lista.frente not in frentes]
+            if voto.lista.frente not in frentes
+            and voto.lista.frente is not None]
 
         return frentes
 
@@ -616,6 +624,8 @@ class Usuario(db.Model):
     usuario = db.Column(db.String(50), unique=True)
     contraseña = db.Column(db.String(50))
     roles = db.relationship("Rol", secondary=lambda: UsuarioRoles)
+    frentes = db.relationship(
+        "Frente", secondary=lambda: UsuarioFrentes)
 
     def __init__(self, usuario='', passw=''):
         self.usuario = usuario
@@ -676,4 +686,14 @@ UsuarioRoles = db.Table(
     db.Column('rol_id',
               db.Integer,
               db.ForeignKey("Rol.id"), primary_key=True)
+)
+
+UsuarioFrentes = db.Table(
+    'UsuarioFrentes', db.Model.metadata,
+    db.Column('usuario_id',
+              db.Integer,
+              db.ForeignKey("Usuario.id"), primary_key=True),
+    db.Column('frente_id',
+              db.Integer,
+              db.ForeignKey("Frente.id"), primary_key=True)
 )

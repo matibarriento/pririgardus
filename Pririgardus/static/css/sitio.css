@@ -1,9 +1,25 @@
+/*body{
+    color: grey;
+}
+*/
+
+#datosMesa {
+    outline: none;
+}
+.container, #datosMesaTable{
+    width: auto;
+}
+
 .ui-autocomplete {
     width: auto !important;
     height: auto; 
     max-height: 210px;
     overflow-y: scroll;
     overflow-x: hidden;
+}
+
+.ui-dialog-titlebar-close {
+  visibility: hidden;
 }
 
 #selecionarMesa #inputMesa {
@@ -22,3 +38,9 @@
 header .head {
     float: left;
 }
+
+
+/*.navbar-inverse{
+    background-color: grey;
+    border-color: grey;
+}*/

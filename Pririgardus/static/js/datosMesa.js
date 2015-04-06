@@ -1,5 +1,5 @@
 $(function(){
-    $('#datosMesaTable').keypress(function(e)
+    $('#datosMesa').on("keypress", function(e)
     {
         console.log(e.keyCode);
         if (e.keyCode == 27) { 
@@ -9,11 +9,10 @@ $(function(){
             try{
                 var key = String.fromCharCode(e.keyCode);
                 var cargo = $('#' + key);
-                console.log(cargo);
                 cargo.click();
             }
             catch(ex){
-                console.log(ex);
+                // console.log(ex);
             }
         }
     });

@@ -1,5 +1,6 @@
 $(function() {
-
+    $(".active").removeClass("active");
+    $("#informesLink").addClass("active");
     crearAutocompletado($("#alcanceCargo"), $("#cargoID"), false);
     crearAutocompletado(("#frentes"), $("#frenteID"), true);
 
@@ -28,6 +29,12 @@ $(function() {
             getFrentes($("#cargoID").val());
         }
     });
+    setInterval(function(){
+        if(! $("#informe").prop("disabled")){
+            $("#informe").click();
+        }
+    },60000); //milisegundos, 1 minuto
+
 
 });
 

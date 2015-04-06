@@ -1,5 +1,7 @@
 var mesas;
 $(function() {
+    $(".active").removeClass("active");
+    $("#mesaLink").addClass("active");
     $("#numero_mesa").focus();
     $("#numero_mesa").val('');
     $("#numero_mesa").autoNumeric('init', {

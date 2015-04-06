@@ -104,7 +104,10 @@ class CargarPlanilla(Form):
         self.impugnados.data = planilla.impugnados
         self.recurridos.data = planilla.recurridos
         for frente in planilla.getFrentes():
-            self.votos_frentes.entries.append(VotoFrente(frente, planilla))
+            if (
+                frente in current_user.frentes
+                    or len(current_user.frentes) == 0):
+                self.votos_frentes.entries.append(VotoFrente(frente, planilla))
         # for votolista in planilla.votos.join(Lista).order_by(
         #         Lista.posicionFrente, Lista.posicionLista).all():
         #     self.votos_listas.entries.append(VotoLista(votolista))
@@ -144,15 +147,31 @@ class Exportar(BaseView):
         return self.render('exportar.html', tiposCargo=tiposCargo)
 
     def is_accessible(self):
-        return current_user.tieneRol(Roles.Administrador) and current_user.is_authenticated()
+        return (current_user.tieneRol(Roles.Administrador)
+                and current_user.is_authenticated())
 
 
 class UsuarioMV(ModelView):
 
-    column_exclude_list = ("contraseña")
+    # column_exclude_list = ("contraseña")
+
+    column_list = ("usuario", "roles", "frentes")
+
+    column_display_all_relations = True
+
+    @action("borrarFrentes", "Borrar Frentes")
+    def borrarFrentes(self, listID):
+        for usu in listID:
+            usuario = db.session.query(Usuario).filter(
+                Usuario.id == usu).first()
+            if usuario:
+                for fren in usuario.frentes:
+                    usuario.frentes.remove(fren)
+        db.session.commit()
 
     def is_accessible(self):
-        return current_user.tieneRol(Roles.Administrador) and current_user.is_authenticated()
+        return (current_user.tieneRol(Roles.Administrador)
+                and current_user.is_authenticated())
 
     def __init__(self, session, **kwargs):
         super(UsuarioMV, self).__init__(Usuario, session, **kwargs)
@@ -196,7 +215,8 @@ class PlanillaMV(ModelView):
         db.session.commit()
 
     def is_accessible(self):
-        return current_user.tieneRol(Roles.Administrador) and current_user.is_authenticated()
+        return (current_user.tieneRol(Roles.Administrador)
+                and current_user.is_authenticated())
 
     def __init__(self, session, **kwargs):
         super(PlanillaMV, self).__init__(PlanillaMesa, session, **kwargs)

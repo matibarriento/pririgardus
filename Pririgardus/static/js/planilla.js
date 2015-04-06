@@ -1,4 +1,6 @@
 $(function() {
+    $(".active").removeClass("active");
+    $("#mesaLink").addClass("active");
 
     if(escrutada){
         $("#escrutar").remove();
@@ -23,7 +25,6 @@ $(function() {
             type: 'POST',
             success: function(response) {
                 $('#datosMesa').html(response);
-                console.log($('#datosMesa'));
                 $("#datosMesa").dialog( "open" );
                 return false;
             },
@@ -52,11 +53,11 @@ $(function() {
             $('#cancelar').click();
         }
     });
+
     $(".voto").keypress(function(e) {
         //var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
         if(e.keyCode == 13) {
             e.preventDefault();
-            console.log(e.keyCode);
             var inputs = $(this).closest('form').find(':input:visible');
             inputs.eq( inputs.index(this)+ 1 ).focus();
             return false;
@@ -67,6 +68,10 @@ $(function() {
         aSep: '', aDec: ',', vMin: '0', mDec: '0', wEmpty: 'zero'});
 
     $(".voto").on("focus", function(){
+        $(".votosFrente").removeClass("panel-primary");
+        if ( $(this).hasClass("voto-lista") ){
+            $($(this).closest(".votosFrente")).addClass("panel-primary");
+        }
         $(this).select();
     });
 

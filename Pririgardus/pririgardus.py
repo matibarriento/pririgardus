@@ -1,13 +1,15 @@
 # pririgardus.py
 
 import logging
+import datetime
+import time
 # import argparse
 from flask import (Flask, render_template, jsonify, request, url_for, redirect)
 from werkzeug.contrib.fixers import ProxyFix
 from flask.ext.admin import Admin
 from flask.ext.login import (
     LoginManager, login_required, login_user, logout_user)
-import json
+
 from logica import (parsearPlanilla, exportarPlanilla,
                     cantidadMesasExcrutadas, datosInforme)
 from models.models import (db, Mesa, PlanillaMesa, TipoCargo, AlcanceCargo,
@@ -23,7 +25,8 @@ app.config.from_object('config')
 db.init_app(app)
 db.app = app
 # base_template="_layout.html"
-admin = Admin(app)  #, index_view=Administrador, endpoint=None)
+#, index_view=Administrador, endpoint=None)
+admin = Admin(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "/"
@@ -109,10 +112,9 @@ def getFrentesCargo(cargo_id):
 
 
 @app.route("/getDatosGrafico")
-@app.route("/getDatosGrafico/<tipo_cargo_id>/<cargo_id>/<frente_id>")
-def getDatosGrafico(tipo_cargo_id, cargo_id, frente_id):
-    return jsonify(datosInforme(int(tipo_cargo_id),
-                                int(cargo_id), int(frente_id)))
+@app.route("/getDatosGrafico/<cargo_id>/<frente_id>")
+def getDatosGrafico(cargo_id, frente_id):
+    return jsonify(datosInforme(int(cargo_id), int(frente_id)))
 
 ###########################################################################
 
@@ -131,10 +133,13 @@ def getDatosMesa(numero_mesa):
            methods=['GET'])
 def getInforme(tipo_cargo_id, cargo_id, frente_id, tipo_grafico):
     mesasEscrutadas = cantidadMesasExcrutadas(int(cargo_id))
+    tiempoInforme = time.time()
+    momentoInforme = datetime.datetime.fromtimestamp(
+        tiempoInforme).strftime('%H:%M:%S')
     return render_template("helpers/_graficoInforme.html",
-                           mesasEscrutadas=mesasEscrutadas,
-                           tipo_cargo_id=tipo_cargo_id, cargo_id=cargo_id,
-                           frente_id=frente_id, tipo_grafico=tipo_grafico)
+                           mesasEscrutadas=mesasEscrutadas, cargo_id=cargo_id,
+                           frente_id=frente_id, tipo_grafico=tipo_grafico,
+                           momentoInforme=momentoInforme)
 
 ###########################################################################
 

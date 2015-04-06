@@ -1,35 +1,33 @@
-<table id="datosMesaTable">
-    <tr>
-        {{datosMesa.mesa_numero}}
-    </tr>
-    <tr>
-        <td>{{datosMesa.escuela}}</td>
-        <td>{{datosMesa.circuito}}</td>
-    </tr>
-    </table>
-    <table>
-    <tr>
-        {% set i = 1 %}
-        {% for planilla in datosMesa.planillas %}
-        <td>
-            <form method='link' action='{{url_for("Planilla",planilla_id=planilla.id)}}'>
+<div id="datosMesaTable" tabindex="1">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">
+                Mesa <strong> {{datosMesa.mesa_numero}} </strong>
+            </h3>
+        </div>
+        <div class="panel-body">
+            <p>{{datosMesa.escuela}}</p>
+            <p>{{datosMesa.circuito}}</p>
+        </div>
+    
+        <div id="botonesPlanillas" class="btn-toolbar" tabindex="1">
+            {% set i = 1 %}
+            {% for planilla in datosMesa.planillas %}
                 {% if planilla.habilitado %}
-                    <input type="submit"  id="{{i}}" value="{{i}} - {{planilla.texto}}" >
-                    {% set i = i + 1 %}
+                 <button id="{{i}}" class="btn btn-success" type="button" onClick="parent.location='{{url_for("Planilla",planilla_id=planilla.id)}}'">{{i}} - {{planilla.texto}}</button>
+                        {% set i = i + 1 %}
                 {% else %}
-                    <input type="submit" value="{{planilla.texto}}" title="{{planilla.texto}} ya fue escrutada" >
+                    <button class="btn btn-default" type="button" title="{{planilla.texto}} ya fue escrutada"  onClick="parent.location='{{url_for("Planilla",planilla_id=planilla.id)}}'">{{planilla.texto}}</button>
                 {% endif %}
-            </form>
-            
-        </td>
-        {% endfor %}
-        {% if botonSalir %}
-        <td>
-            <form method='link' action='{{url_for("mesas")}}'>
-                <input type="submit" id="salir" value="Salir" >
-            </form>
-        </td>
-        {% endif %}
-    </tr>
-</table>
+            {% endfor %}
+            {% if botonSalir %}
+            <td>
+                <form method='link' action='{{url_for("mesas")}}'>
+                    <input type="submit" id="salir" value="Salir" >
+                </form>
+            </td>
+            {% endif %}
+        </div>
+    </div>
+</div>
 <script type="text/javascript" src='{{url_for("static", filename="js/datosMesa.js")}}'></script>

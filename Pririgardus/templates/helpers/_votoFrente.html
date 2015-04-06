@@ -1,13 +1,14 @@
 {% from "helpers/_formHelpers.html" import render_field %}
 {% macro render_frente(frente, labeled=False) %}
 
-<table>
-    <div tabindex="0" class="{{frente.clase}} votosFrente">
+<div tabindex="1" class="{{frente.clase}}  panel panel-default votosFrente">
+    <h3 class="panel-title">
         {{frente.frente}}
-
-        {%for voto in frente.votos_listas %}
-            <tr>{{ render_field(voto.voto, labeled=labeled, class="voto") }}</tr>
-        {% endfor %}
+    </h3>
+    <div class="{{frente.clase}} panel-body">
+            {%for voto in frente.votos_listas %}
+                <div class="form-group">{{ render_field(voto.voto, labeled=labeled, class="voto voto-lista") }}</div>
+            {% endfor %}
     </div>
-</table>
+</div>
 {% endmacro %}

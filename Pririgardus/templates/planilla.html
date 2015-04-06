@@ -1,5 +1,6 @@
 {% extends "_layout.html" %}
 {% block body %}
+<div class="col-md-12 column">
 <script type="text/javascript" src="/static/js/lib/autoNumeric.min.js" ></script>
 <script type="text/javascript">
     var urlPlanilla = '{{url_for("Planilla",planilla_id=form.planilla_id.data)}}';
@@ -7,35 +8,47 @@
 </script>
 {% from "helpers/_formHelpers.html" import render_field %}
 {% from "helpers/_votoFrente.html" import render_frente %}
-<table>
-    <tr>
-        <td>{{form.mesa_numero}}</td>
-    </tr>
-    <tr>
-        <td>{{form.titulo}}</td>
-    </tr>
-    <tr>
-        <td>{{form.cargo}}</td>
-    </tr>
-</table>
-<div id="cargarPlanilla" tabindex="0">
-    <form method=post action='/mesas'>
+    <div class="datosMesa panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">
+                Mesa <strong> {{form.mesa_numero}} </strong>
+            </h3>
+        </div>
+        <div class="panel-body">
+            <p>{{form.titulo}}</p>
+            <p>{{form.cargo}}</p>
+        </div>
+    </div>
+    <div class="container">
+        <form method=post action='/mesas' class="form-horizontal" role="form">
         {{form.planilla_id}}
-        <table id="votosPlanilla" tabindex="0">
-            {% for frente in form.votos_frentes %}
-                <tr>{{ render_frente(frente, labeled=form.escrutada)}}</tr>
-            {% endfor %}
-            <table>
-            <tr>{{ render_field(form.nulos, labeled=form.escrutada, class="voto") }}</tr>
-            <tr>{{ render_field(form.blancos, labeled=form.escrutada, class="voto") }}</tr>
-            <tr>{{ render_field(form.impugnados, labeled=form.escrutada, class="voto") }}</tr>
-            <tr>{{ render_field(form.recurridos, labeled=form.escrutada, class="voto") }}</tr>
-            </table>
-        </table>
-        <p><input type=submit value="Escrutar" id="escrutar"></p>
-        <p><input type=submit value="Cancelar" id="cancelar"></p>
-    </form>
+        <div class="cargarPlanilla">
+            <div>
+                <div class="votosPlanilla">
+                        {% for frente in form.votos_frentes %}
+                            {{ render_frente(frente, labeled=form.escrutada)}}
+                        {% endfor %}
+                </div>
+                <div tabindex="1" class="panel panel-default">
+                <div class="panel-body">
+                    {% if current_user.frentes|length == 0 %}
+                        <div class="form-group">{{ render_field(form.nulos, labeled=form.escrutada, class="voto") }}</div>
+                        <div class="form-group">{{ render_field(form.blancos, labeled=form.escrutada, class="voto") }}</div>
+                        <div class="form-group">{{ render_field(form.impugnados, labeled=form.escrutada, class="voto") }}</div>
+                        <div class="form-group">{{ render_field(form.recurridos, labeled=form.escrutada, class="voto") }}</div>
+                    {% endif %}
+                    </div>
+                </div>
+                <div class="btn-toolbar">
+                    <input type=submit class="btn btn-success" value="Escrutar" id="escrutar">
+                    <input type=submit class="btn btn-danger" value="Cancelar" id="cancelar">
+                </div>
+            </div>
+        </div>
+        </form>
+    </div>
+    <div id="datosMesa" tabindex="2"></div>
 </div>
-<div id="datosMesa" tabindex="2"></div>
 <script type="text/javascript" src='{{url_for("static", filename="js/planilla.js")}}'></script>
+
 {% endblock %}

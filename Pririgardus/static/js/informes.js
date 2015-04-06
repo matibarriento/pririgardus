@@ -2,7 +2,6 @@ var cantInformes = 2;
 var tabTemplate = "<li><a href='#{href}'>#{label}</a> <span class='cerrar'><button>X</button></span></li>";
 var tabs;
 $(function() {
-    
     tabs = $( "#divInformes" ).tabs();
 
     $( "#agregarInforme" ).button().click(function() {
