@@ -1,8 +1,9 @@
-#logica.py
+# logica.py
+
 from flask.ext.login import current_user
 from models.models import (
     db, PlanillaMesa, VotoListaMesa, Cargo, Frente, Lista)
-from models.constantes import VOTO_NAME_PREFIX, VALIDACION_PLANILLA
+from models.utils import VOTO_NAME_PREFIX, VALIDACION_PLANILLA
 
 
 def parsearPlanilla(planilla_id, planilla_form):
@@ -36,8 +37,8 @@ def validarForm(planilla, planilla_form):
         voto
         for voto
         in planilla.votos.all()
-        if voto.lista.frente in current_user.frentes
-        or len(current_user.frentes) == 0])
+        if voto.lista.frente in current_user.frentes or
+        len(current_user.frentes) == 0])
     if not cant_votos_form == cant_votos_frente_usuario:
         return False
     if len(current_user.frentes) == 0:
@@ -61,6 +62,19 @@ def cantidadMesasExcrutadas(cargo_id):
         return 0
     else:
         return round(escrutadas / totales, 3)
+
+
+def totalVotosCargo(cargo_id, frente_id):
+    if frente_id == 0:
+        planillas = PlanillaMesa.query.filter(
+            PlanillaMesa.cargo_id == cargo_id).all()
+        total = 0
+        for planilla in planillas:
+            total += planilla.Total_Votos()
+        return total
+    else:
+        frente = Frente.query.get(frente_id)
+        return frente.Votos_Frente(cargo_id)
 
 
 def datosInforme(cargo_id, frente_id):

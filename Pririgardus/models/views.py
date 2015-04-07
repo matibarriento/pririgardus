@@ -1,14 +1,14 @@
-#models.view.py
+# models.view.py
 from wtforms import (
-    Form, IntegerField, FieldList, FormField, HiddenField, validators,
+    Form, IntegerField, FieldList, FormField, HiddenField,
     TextField, PasswordField)
 from flask.ext.admin import BaseView, expose, AdminIndexView
 from flask.ext.admin.actions import action
 from flask.ext.login import current_user
 # from flask.ext.admin.model import BaseModelView
 from flask.ext.admin.contrib.sqla import ModelView
-#from wtforms.validators import InputRequired, NumberRange
-from models.constantes import VOTO_NAME_PREFIX
+# from wtforms.validators import InputRequired, NumberRange
+from models.utils import VOTO_NAME_PREFIX, UsuarioInvalido, PasswordInvalida
 from models.models import (db, PlanillaMesa, Cargo, TipoCargo,
                            Usuario, Roles, Lista)
 
@@ -105,8 +105,8 @@ class CargarPlanilla(Form):
         self.recurridos.data = planilla.recurridos
         for frente in planilla.getFrentes():
             if (
-                frente in current_user.frentes
-                    or len(current_user.frentes) == 0):
+                frente in current_user.frentes or
+                    len(current_user.frentes) == 0):
                 self.votos_frentes.entries.append(VotoFrente(frente, planilla))
         # for votolista in planilla.votos.join(Lista).order_by(
         #         Lista.posicionFrente, Lista.posicionLista).all():
@@ -147,8 +147,8 @@ class Exportar(BaseView):
         return self.render('exportar.html', tiposCargo=tiposCargo)
 
     def is_accessible(self):
-        return (current_user.tieneRol(Roles.Administrador)
-                and current_user.is_authenticated())
+        return (current_user.tieneRol(Roles.Administrador) and
+                current_user.is_authenticated())
 
 
 class UsuarioMV(ModelView):
@@ -170,8 +170,8 @@ class UsuarioMV(ModelView):
         db.session.commit()
 
     def is_accessible(self):
-        return (current_user.tieneRol(Roles.Administrador)
-                and current_user.is_authenticated())
+        return (current_user.tieneRol(Roles.Administrador) and
+                current_user.is_authenticated())
 
     def __init__(self, session, **kwargs):
         super(UsuarioMV, self).__init__(Usuario, session, **kwargs)
@@ -215,8 +215,8 @@ class PlanillaMV(ModelView):
         db.session.commit()
 
     def is_accessible(self):
-        return (current_user.tieneRol(Roles.Administrador)
-                and current_user.is_authenticated())
+        return (current_user.tieneRol(Roles.Administrador) and
+                current_user.is_authenticated())
 
     def __init__(self, session, **kwargs):
         super(PlanillaMV, self).__init__(PlanillaMesa, session, **kwargs)
@@ -224,15 +224,15 @@ class PlanillaMV(ModelView):
 
 class LoginForm(Form):
 
-    usuario = TextField(validators=[validators.required()])
-    password = PasswordField(validators=[validators.required()])
+    usuario = TextField()
+    password = PasswordField()
 
     def validate_login(self):
         usuario = self.get_user()
         if usuario is None:
-            raise validators.ValidationError('Invalid user')
+            raise UsuarioInvalido("El usuario no existe")
         if not usuario.contraseña == self.password.data:
-            raise validators.ValidationError('Invalid password')
+            raise PasswordInvalida("La contraseña es incorrecta")
 
     def get_user(self):
         return db.session.query(Usuario).filter(

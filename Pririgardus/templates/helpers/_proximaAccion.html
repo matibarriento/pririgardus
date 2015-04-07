@@ -10,7 +10,7 @@
             <p>{{datosMesa.circuito}}</p>
         </div>
     
-        <div id="botonesPlanillas" class="btn-toolbar" tabindex="1">
+        <div id="botonesPlanillas" class="btn-group btn-group-vertical" tabindex="1">
             {% set i = 1 %}
             {% for planilla in datosMesa.planillas %}
                 {% if planilla.habilitado %}
@@ -20,9 +20,9 @@
                     <button class="btn btn-default" type="button" title="{{planilla.texto}} ya fue escrutada"  onClick="parent.location='{{url_for("Planilla",planilla_id=planilla.id)}}'">{{planilla.texto}}</button>
                 {% endif %}
             {% endfor %}
-{#             {% if botonSalir %}
-                <button id="salir" class="btn btn-danger" type="button" onClick="parent.location='{{url_for("mesas")}}'">Salir</button>
-            {% endif %} #}
+            {% if botonSalir %}
+                <button id="salir" class="btn btn-danger" type="button" onClick="parent.location='{{url_for("mesas")}}'">* - Salir</button>
+            {% endif %}
         </div>
     </div>
 </div>

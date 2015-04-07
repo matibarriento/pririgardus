@@ -12,7 +12,7 @@ class Pais(db.Model):
     __tablename__ = "Pais"
     id = db.Column(db.Integer, primary_key=True)
     descripcion = db.Column(db.String(20), unique=True)
-    #propiedad 'provincias' para obtener sus hijas
+    # propiedad 'provincias' para obtener sus hijas
 
     def __init__(self, descripcion=''):
         self.descripcion = descripcion
@@ -37,7 +37,7 @@ class Provincia(db.Model):
     pais_id = db.Column(db.Integer, db.ForeignKey('Pais.id'))
     pais = db.relationship('Pais', backref=db.backref(
                            'provincias', lazy='dynamic'))
-    #propiedad 'departamentos' para obtener sus hijas
+    # propiedad 'departamentos' para obtener sus hijas
 
     def __init__(self, descripcion='', pais=''):
         self.descripcion = descripcion
@@ -63,7 +63,7 @@ class Departamento(db.Model):
     provincia_id = db.Column(db.Integer, db.ForeignKey('Provincia.id'))
     provincia = db.relationship('Provincia', backref=db.backref(
         'departamentos', lazy='dynamic'))
-    #propiedad 'localidades' para obtener sus hijas
+    # propiedad 'localidades' para obtener sus hijas
 
     def __init__(self, descripcion='', provincia=''):
         self.descripcion = descripcion
@@ -92,7 +92,7 @@ class Localidad(db.Model):
     departamento_id = db.Column(db.Integer, db.ForeignKey('Departamento.id'))
     departamento = db.relationship('Departamento', backref=db.backref(
         'localidades', lazy='dynamic'))
-    #propiedad 'seccionales' para obtener sus hijas
+    # propiedad 'seccionales' para obtener sus hijas
 
     def __init__(self, descripcion='', departamento=''):
         self.descripcion = descripcion
@@ -122,7 +122,7 @@ class Seccional(db.Model):
     localidad_id = db.Column(db.Integer, db.ForeignKey('Localidad.id'))
     localidad = db.relationship('Localidad', backref=db.backref(
         'seccionales', lazy='dynamic'))
-    #propiedad 'circuitos' para obtener sus hijas
+    # propiedad 'circuitos' para obtener sus hijas
 
     def __init__(self, numero='', localidad=''):
         self.numero = numero
@@ -149,7 +149,7 @@ class Circuito(db.Model):
     seccional_id = db.Column(db.Integer, db.ForeignKey('Seccional.id'))
     seccional = db.relationship('Seccional', backref=db.backref(
         'circuitos', lazy='dynamic'))
-    #propiedad 'escuelas' para obtener sus hijas
+    # propiedad 'escuelas' para obtener sus hijas
 
     def __init__(self, descripcion='', seccional=''):
         self.descripcion = descripcion
@@ -176,7 +176,7 @@ class Escuela(db.Model):
     circuito_id = db.Column(db.Integer, db.ForeignKey('Circuito.id'))
     circuito = db.relationship('Circuito', backref=db.backref(
         'escuelas', lazy='dynamic'))
-    #propiedad 'mesas' para obtener sus hijas
+    # propiedad 'mesas' para obtener sus hijas
 
     def __init__(self, descripcion='', circuito=''):
         self.descripcion = descripcion
@@ -200,7 +200,7 @@ class Mesa(db.Model):
     escuela_id = db.Column(db.Integer, db.ForeignKey('Escuela.id'))
     escuela = db.relationship('Escuela', backref=db.backref(
         'mesas', lazy='dynamic'))
-    #propiedad 'planillas' para obtener sus hijas
+    # propiedad 'planillas' para obtener sus hijas
 
     def __init__(self, numero='', escuela=''):
         self.numero = numero
@@ -250,7 +250,7 @@ class TipoCargo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     alcance_cargo = db.Column(db.String(50))
     descripcion = db.Column(db.String(50))
-    #propiedad 'cargos' para obtener sus hijas
+    # propiedad 'cargos' para obtener sus hijas
 
     def __init__(self, descripcion='', alcance_cargo=''):
         self.descripcion = descripcion
@@ -270,7 +270,7 @@ class Frente(db.Model):
     __tablename__ = "Frente"
     id = db.Column(db.Integer, primary_key=True)
     descripcion = db.Column(db.String(50))
-    #propiedad 'listas' para obtener sus hijas
+    # propiedad 'listas' para obtener sus hijas
 
     def __init__(self, id=None, descripcion=''):
         if(id):
@@ -303,7 +303,7 @@ class Lista(db.Model):
     cargo_id = db.Column(db.Integer, db.ForeignKey('Cargo.id'))
     cargo = db.relationship('Cargo', backref=db.backref(
         'listas', lazy='dynamic'))
-    #propidad 'votos' para obtener sus hijos
+    # propidad 'votos' para obtener sus hijos
 
     def __init__(self, posicionFrente, posicionLista,
                  descripcion='', frente='', cargo=''):
@@ -356,8 +356,8 @@ class Cargo(db.Model):
     tipo_cargo_id = db.Column(db.Integer, db.ForeignKey('TipoCargo.id'))
     tipo_cargo = db.relationship('TipoCargo', backref=db.backref(
         'cargos', lazy='dynamic'))
-    #propiedad 'listas' para obtener sus hijas
-    #propiedad 'planillas' para obtener sus hijas
+    # propiedad 'listas' para obtener sus hijas
+    # propiedad 'planillas' para obtener sus hijas
 
     __mapper_args__ = {
         'polymorphic_identity': 'Cargo',
@@ -378,8 +378,8 @@ class Cargo_Local(Cargo):
     alcance_id = db.Column(db.Integer, db.ForeignKey('Localidad.id'))
     alcance = db.relationship('Localidad', backref=db.backref(
         'cargos', lazy='dynamic'))
-    #propiedad 'listas' para obtener sus hijas
-    #propiedad 'planillas' para obtener sus hijas
+    # propiedad 'listas' para obtener sus hijas
+    # propiedad 'planillas' para obtener sus hijas
 
     __mapper_args__ = {
         'polymorphic_identity': AlcanceCargo.Cargo_Local.name,
@@ -418,8 +418,8 @@ class Cargo_Departamental(Cargo):
     alcance_id = db.Column(db.Integer, db.ForeignKey('Departamento.id'))
     alcance = db.relationship('Departamento', backref=db.backref(
         'cargos', lazy='dynamic'))
-    #propiedad 'listas' para obtener sus hijas
-    #propiedad 'planillas' para obtener sus hijas
+    # propiedad 'listas' para obtener sus hijas
+    # propiedad 'planillas' para obtener sus hijas
 
     __mapper_args__ = {
         'polymorphic_identity': AlcanceCargo.Cargo_Departamental.name,
@@ -458,8 +458,8 @@ class Cargo_Provincial(Cargo):
     alcance_id = db.Column(db.Integer, db.ForeignKey('Provincia.id'))
     alcance = db.relationship('Provincia', backref=db.backref(
         'cargos', lazy='dynamic'))
-    #propiedad 'listas' para obtener sus hijas
-    #propiedad 'planillas' para obtener sus hijas
+    # propiedad 'listas' para obtener sus hijas
+    # propiedad 'planillas' para obtener sus hijas
 
     __mapper_args__ = {
         'polymorphic_identity': AlcanceCargo.Cargo_Provincial.name,
@@ -497,8 +497,8 @@ class Cargo_Nacional(Cargo):
     alcance_id = db.Column(db.Integer, db.ForeignKey('Pais.id'))
     alcance = db.relationship('Pais', backref=db.backref(
         'cargos', lazy='dynamic'))
-    #propiedad 'listas' para obtener sus hijas
-    #propiedad 'planillas' para obtener sus hijas
+    # propiedad 'listas' para obtener sus hijas
+    # propiedad 'planillas' para obtener sus hijas
 
     __mapper_args__ = {
         'polymorphic_identity': AlcanceCargo.Cargo_Nacional.name,
@@ -515,7 +515,6 @@ class Cargo_Nacional(Cargo):
         return self.descripcion
 
     def Actualizar_Planillas(self):
-        #planillas = []
         mesas = self.alcance.getMesas()
         if(len(mesas) > 0):
             for mesa in mesas:
@@ -544,7 +543,7 @@ class PlanillaMesa(db.Model):
     cargo_id = db.Column(db.Integer, db.ForeignKey('Cargo.id'))
     cargo = db.relationship('Cargo', backref=db.backref(
         'planillas', lazy='dynamic'))
-    #propiedad 'votos' para obtener sus hijas
+    # propiedad 'votos' para obtener sus hijas
 
     def __init__(self, mesa='', cargo=''):
         self.mesa = mesa

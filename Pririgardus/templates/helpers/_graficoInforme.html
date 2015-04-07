@@ -8,8 +8,9 @@
 </script>
 <script type="text/javascript" src="/static/js/lib/google-charts-jsapi.js" ></script>
 <script type="text/javascript" src="/static/js/lib/chartkick.js" ></script>
-<div>
+<div class="panel-body">
     <h1>Mesas escrutadas: {{mesasEscrutadas}} %</h1>
+    <h1>Total de votos: {{totalVotos}} </h1>
     <h3>Hora de informe: {{momentoInforme}}</h3>
     <div id="grafico" style="height:600px"></div>
 </div>
@@ -18,17 +19,19 @@
 $(function() {
     getDatosGrafico();
 
+
 });
 
 function getDatosGrafico(){
         $.getJSON(urlDatosGrafico + "/" + cargo_id+ "/" + frente_id, function (data) {
                 datoGraficos = data;
+                if(tipo_grafico == '1'){
+                    new Chartkick.ColumnChart("grafico", datoGraficos);
+                }
+                if(tipo_grafico == '0'){
+                    new Chartkick.PieChart("grafico", datoGraficos );
+                }
         });
-        if(tipo_grafico == '0'){
-            new Chartkick.ColumnChart("grafico", datoGraficos);
-        }
-        if(tipo_grafico == '1'){
-            new Chartkick.PieChart("grafico", datoGraficos );
-        }
+        
     }
 </script>

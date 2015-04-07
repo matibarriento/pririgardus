@@ -4,19 +4,21 @@ import logging
 import datetime
 import time
 # import argparse
-from flask import (Flask, render_template, jsonify, request, url_for, redirect)
+from flask import (Flask, render_template, jsonify, request, url_for,
+                   redirect, flash)
 from werkzeug.contrib.fixers import ProxyFix
 from flask.ext.admin import Admin
 from flask.ext.login import (
     LoginManager, login_required, login_user, logout_user)
 
 from logica import (parsearPlanilla, exportarPlanilla,
-                    cantidadMesasExcrutadas, datosInforme)
+                    cantidadMesasExcrutadas, datosInforme, totalVotosCargo)
 from models.models import (db, Mesa, PlanillaMesa, TipoCargo, AlcanceCargo,
                            Cargo, Frente, Lista, Usuario, Roles)
 from models.views import (
     DatosMesa, CargarPlanilla, Exportar,
     PlanillaMV, LoginForm, UsuarioMV)
+from models.utils import FLASH_ERROR
 from helpers import requires_roles
 
 # NOMBRE_BASE_DATOS = 'pririgardus.db'
@@ -25,7 +27,7 @@ app.config.from_object('config')
 db.init_app(app)
 db.app = app
 # base_template="_layout.html"
-#, index_view=Administrador, endpoint=None)
+# index_view=Administrador, endpoint=None)
 admin = Admin(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -133,12 +135,15 @@ def getDatosMesa(numero_mesa):
            methods=['GET'])
 def getInforme(tipo_cargo_id, cargo_id, frente_id, tipo_grafico):
     mesasEscrutadas = cantidadMesasExcrutadas(int(cargo_id))
+    totalVotos = totalVotosCargo(int(cargo_id), int(frente_id))
     tiempoInforme = time.time()
     momentoInforme = datetime.datetime.fromtimestamp(
         tiempoInforme).strftime('%H:%M:%S')
     return render_template("helpers/_graficoInforme.html",
-                           mesasEscrutadas=mesasEscrutadas, cargo_id=cargo_id,
-                           frente_id=frente_id, tipo_grafico=tipo_grafico,
+                           mesasEscrutadas=mesasEscrutadas,
+                           totalVotos=totalVotos,
+                           cargo_id=cargo_id, frente_id=frente_id,
+                           tipo_grafico=tipo_grafico,
                            momentoInforme=momentoInforme)
 
 ###########################################################################
@@ -158,6 +163,7 @@ def index():
             login_user(usuario)
             return redirect(request.args.get("next") or url_for("index"))
         except Exception as e:
+            flash(e, FLASH_ERROR)
             logger.log(logging.ERROR, e)
     return render_template("index.html", form=form)
 
@@ -199,11 +205,13 @@ def Planilla(planilla_id):
                 PlanillaMesa.id == planilla_id).first().mesa
             datosMesa = DatosMesa(mesa, todas=False)
             if(len(datosMesa.planillas) > 0):
-                return render_template("helpers/_datosMesa.html",
+                return render_template("helpers/_proximaAccion.html",
                                        datosMesa=datosMesa, botonSalir=True)
+            else:
+                return redirect(url_for("mesas")), 404
         except Exception as e:
             logger.log(logging.ERROR, e)
-        return redirect(url_for("index"))
+        return redirect(url_for("mesas"))
 
 
 @app.route("/Exportar")

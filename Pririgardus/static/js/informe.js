@@ -16,6 +16,8 @@ $(function() {
     
     $("#tipoCargo").on("change", function()
     {
+        //$("#alcanceCargo").autocomplete("option", "source", []);
+        clearHijo(("#alcanceCargo"), $("#cargoID"), $("#informe"));
         var tieneValor = Anidado($("#tipoCargo"), $("#alcanceCargo"), $("#cargoID"), $("#informe"));
         if(tieneValor){
             getAlcanceCargos($("#tipoCargo").val());
@@ -24,6 +26,7 @@ $(function() {
 
     $("#alcanceCargo").on("change", function()
     {
+        clearHijo($("#frentes"), $("#frenteID"), $("#informe"));
         var tieneValor = Anidado($("#cargoID"), $("#frentes"), $("#frenteID"), $("#informe"));
         if(tieneValor){
             getFrentes($("#cargoID").val());
@@ -52,6 +55,13 @@ function Anidado(controlPadre, controlHijo, controlIDHijo, controlSubmit){
     }
     $(controlHijo).trigger("change");
     return tieneValor;
+}
+
+function clearHijo(controlHijo, controlIDHijo, controlSubmit){
+    $(controlHijo).prop("disabled", true);
+        $(controlHijo).val("");
+        $(controlIDHijo)[0].value = '0';
+        $(controlSubmit).prop("disabled", true);
 }
 
 function getAlcanceCargos(tipo_cargo_id){

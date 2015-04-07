@@ -3,6 +3,10 @@
 }
 */
 
+.alert {
+    float: right;
+}
+
 #datosMesa {
     outline: none;
 }

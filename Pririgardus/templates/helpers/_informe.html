@@ -5,12 +5,13 @@
     var urlFrentes = '{{url_for("getFrentesCargo")}}';
     var urlInforme= '{{url_for("getInforme")}}';
 </script>
-<div id="filtros">
-    <form method="GET" action="/">
+<div class="panel panel-default">
+    <div id="filtros" class="panel-body">
+    <form method="GET" action="/" class="form-horizontal" role="form">
         <table>
             <tr>
                 <td>
-                    <label>Cargo</label>
+                    <label class="col-sm-6 control-label">Cargo</label>
                     <select id="tipoCargo">
                         <option value="0">Seleccione</option>
                     {% for tipo in tiposCargo %}
@@ -19,27 +20,29 @@
                     </select>
                 </td>
                 <td>
-                    <label>Lugar</label>
+                    <label class="col-sm-6 control-label">Lugar</label>
                     <input id="cargoID" type="hidden">
                     <input id="alcanceCargo" type="text" tabindex="3">
                 </td>
                 <td>
-                    <label>Frente</label>
+                    <label class="col-sm-6 control-label">Frente</label>
                     <input id="frenteID" type="hidden">
                     <input id="frentes" type="text" tabindex="3">
                 </td>
                 <td>
-                    <p><input type=submit value="Informe" id="informe"></p>
-                </td>
-                <td>
-                    <label>Gráfico</label>
+                    <label class="col-sm-6 control-label">Gráfico</label>
                     <select id="tipoGrafico">
-                        <option value="0">Columnas</option>
-                        <option value="1">Torta</option>
+                        <option value="0">Torta</option>
+                        <option value="1">Columnas</option>
                     </select>
                 </td>
+                <td>
+                    <p><input type=submit value="Informe" id="informe"></p>
+                </td>
+                
             </tr>
     </form>
+</div>
 </div>
 <div id="graficoInforme">
     

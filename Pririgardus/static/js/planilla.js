@@ -12,8 +12,11 @@ $(function() {
         modal: true,
         closeOnEscape: false,
         draggable: false,
-        dialogClass: "",
         resizable: false,
+        show: true,
+        dialogClass: "modal-dialog",
+        height: "auto",
+        width: "auto",
         title: "Próxima acción"
        });
 
@@ -29,6 +32,7 @@ $(function() {
                 return false;
             },
             error: function(error) {
+                parent.location='/mesas';
                 console.log(error);
             }
         });
