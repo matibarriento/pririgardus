@@ -5,47 +5,39 @@
     var urlFrentes = '{{url_for("getFrentesCargo")}}';
     var urlInforme= '{{url_for("getInforme")}}';
 </script>
-<div class="panel panel-default">
-    <div id="filtros" class="panel-body">
-    <form method="GET" action="/" class="form-horizontal" role="form">
-        <table>
-            <tr>
-                <td>
-                    <label class="col-sm-6 control-label">Cargo</label>
-                    <select id="tipoCargo">
-                        <option value="0">Seleccione</option>
-                    {% for tipo in tiposCargo %}
-                        <option value="{{ tipo.id }}">{{ tipo.descripcion }}</option>
-                    {% endfor %}
-                    </select>
-                </td>
-                <td>
-                    <label class="col-sm-6 control-label">Lugar</label>
-                    <input id="cargoID" type="hidden">
-                    <input id="alcanceCargo" type="text" tabindex="3">
-                </td>
-                <td>
-                    <label class="col-sm-6 control-label">Frente</label>
-                    <input id="frenteID" type="hidden">
-                    <input id="frentes" type="text" tabindex="3">
-                </td>
-                <td>
-                    <label class="col-sm-6 control-label">Gráfico</label>
-                    <select id="tipoGrafico">
-                        <option value="0">Torta</option>
-                        <option value="1">Columnas</option>
-                    </select>
-                </td>
-                <td>
-                    <p><input type=submit value="Informe" id="informe"></p>
-                </td>
+<div class="col-md-12 column">
+    <div id="filtrosContainer" class="panel panel-default">
+        <div id="filtros" class="panel-body">
+            <form method="GET" action="/" class="form-horizontal" role="form">
+                <label class="control-label">Cargo</label>
+                <select id="tipoCargo">
+                    <option value="0">Seleccione</option>
+                {% for tipo in tiposCargo %}
+                    <option value="{{ tipo.id }}">{{ tipo.descripcion }}</option>
+                {% endfor %}
+                </select>
+
+                <label class="control-label">Lugar</label>
+                <input id="cargoID" type="hidden">
+                <input id="alcanceCargo" type="text" tabindex="3">
                 
-            </tr>
-    </form>
-</div>
-</div>
-<div id="graficoInforme">
-    
+                <label class="control-label">Frente</label>
+                <input id="frenteID" type="hidden">
+                <input id="frentes" class="input-large" type="text" tabindex="3">
+                
+                <label class="control-label">Gráfico</label>
+                <select id="tipoGrafico">
+                    <option value="0">Torta</option>
+                    <option value="1">Columnas</option>
+                </select>
+
+                <input type=submit value="Informe" id="informe">
+            </form>
+        </div>
+    </div>
+    <div id="graficoInforme">
+        
+    </div>
 </div>
 <script type="text/javascript" src='{{url_for("static", filename="js/informe.js")}}'></script>
 {% endblock %}

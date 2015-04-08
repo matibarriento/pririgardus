@@ -8,13 +8,16 @@
 </script>
 <script type="text/javascript" src="/static/js/lib/google-charts-jsapi.js" ></script>
 <script type="text/javascript" src="/static/js/lib/chartkick.js" ></script>
-<div class="panel-body">
-    <h1>Mesas escrutadas: {{mesasEscrutadas}} %</h1>
-    <h1>Total de votos: {{totalVotos}} </h1>
-    <h3>Hora de informe: {{momentoInforme}}</h3>
-    <div id="grafico" style="height:600px"></div>
-</div>
-
+{# <div style=""> #}
+    <ul id="datos" class="list-inline">
+        <li class="dato-item list-group-item"><span class="dato-badge badge">{{mesasEscrutadas}} %</span>Mesas escrutadas</li>
+        <li class="dato-item list-group-item"><span class="dato-badge badge">{{totalVotos}}</span>Total de votos</li>
+        <li class="dato-item list-group-item"><span class="dato-badge badge">{{momentoInforme}}</span>Hora de informe</li>
+    </ul>
+    <div id="grafico">
+        
+    </div>
+{# </div> #}
 <script type="text/javascript">
 $(function() {
     getDatosGrafico();
@@ -26,11 +29,13 @@ function getDatosGrafico(){
         $.getJSON(urlDatosGrafico + "/" + cargo_id+ "/" + frente_id, function (data) {
                 datoGraficos = data;
                 if(tipo_grafico == '1'){
-                    new Chartkick.ColumnChart("grafico", datoGraficos);
+                    new Chartkick.ColumnChart("grafico", datoGraficos, {"library": {"title": "Grf"}});
                 }
                 if(tipo_grafico == '0'){
                     new Chartkick.PieChart("grafico", datoGraficos );
                 }
+                // $("#graficoInforme")
+                $(window).scrollTop($("#graficoInforme").offset().top).scrollLeft($("#graficoInforme").offset().left);
         });
         
     }

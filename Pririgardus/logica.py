@@ -78,16 +78,17 @@ def totalVotosCargo(cargo_id, frente_id):
 
 
 def datosInforme(cargo_id, frente_id):
+    # sorted(info, key=lambda fren: fren[1], reverse=True)
     if frente_id == 0:
         frentes = Frente.query.join(Lista).filter(
             Lista.cargo_id == cargo_id).all()
-        return [
+        return sorted([
             (str(frente.descripcion), frente.Votos_Frente(cargo_id))
-            for frente in frentes]
+            for frente in frentes], key=lambda fren: fren[1], reverse=True)
     else:
         frente = Frente.query.get(frente_id)
         listas_frente = frente.listas.join(
             Cargo).filter(Cargo.id == cargo_id).all()
-        return [
-            (str(lista.descripcion), lista.Votos_Lista())
-            for lista in listas_frente]
+        return sorted([(str(lista.descripcion), lista.Votos_Lista())
+                       for lista in listas_frente],
+                      key=lambda fren: fren[1], reverse=True)

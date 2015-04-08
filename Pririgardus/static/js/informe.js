@@ -36,7 +36,7 @@ $(function() {
         if(! $("#informe").prop("disabled")){
             $("#informe").click();
         }
-    },60000); //milisegundos, 1 minuto
+    },60000000); //milisegundos, 1 minuto
 
 
 });

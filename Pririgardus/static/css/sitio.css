@@ -43,8 +43,32 @@ header .head {
     float: left;
 }
 
+#filtros {
+    padding: 0.5em 1em 0.5em 1em;
+}
 
-/*.navbar-inverse{
-    background-color: grey;
-    border-color: grey;
-}*/
+#filtrosContainer{
+    border:none;
+}
+
+.input-large {
+    width: 30em;
+}
+
+#datos{
+  text-align: center;
+}
+
+#grafico{
+    height:40em;
+    width:100%;
+}
+
+.dato-item {
+    margin: 0 1em 0 1em;
+    border:none;
+}
+
+.dato-badge{
+    margin: 0 1em 0 1em;
+}
