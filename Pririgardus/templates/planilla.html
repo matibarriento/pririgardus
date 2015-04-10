@@ -31,7 +31,7 @@
                 </div>
                 <div tabindex="1" class="panel panel-default">
                     <div class="panel-body">
-                        {% if current_user.frentes|length == 0 %}
+                        {% if current_user.otros_votos %}
                             <div class="form-group">{{ render_field(form.nulos, labeled=form.escrutada, class="voto") }}</div>
                             <div class="form-group">{{ render_field(form.blancos, labeled=form.escrutada, class="voto") }}</div>
                             <div class="form-group">{{ render_field(form.impugnados, labeled=form.escrutada, class="voto") }}</div>

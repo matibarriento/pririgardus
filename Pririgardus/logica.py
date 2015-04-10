@@ -1,18 +1,22 @@
 # logica.py
 
 from flask.ext.login import current_user
+from sqlalchemy import func
 from models.models import (
     db, PlanillaMesa, VotoListaMesa, Cargo, Frente, Lista)
-from models.utils import VOTO_NAME_PREFIX, VALIDACION_PLANILLA
+from models.utils import (VOTO_NAME_PREFIX, VALIDACION_PLANILLA,
+                          PlanillaEscrutada, PlanillaInvalida)
 
 
 def parsearPlanilla(planilla_id, planilla_form):
     pf = dict(planilla_form)
     planilla = db.session.query(PlanillaMesa).filter(
         PlanillaMesa.id == planilla_id).first()
+    if planilla.escrutada:
+        raise PlanillaEscrutada("La planilla ya fue escrutada")
     if not validarForm(planilla, planilla_form):
-        raise Exception("Planilla invalida")
-    if len(current_user.frentes) == 0:
+        raise PlanillaInvalida("Hubo un error al carcar la planilla")
+    if current_user.otros_votos:
         for item in VALIDACION_PLANILLA:
             setattr(planilla, item, int(pf[item][0]))
     for keys, value in pf.items():
@@ -41,7 +45,7 @@ def validarForm(planilla, planilla_form):
         len(current_user.frentes) == 0])
     if not cant_votos_form == cant_votos_frente_usuario:
         return False
-    if len(current_user.frentes) == 0:
+    if current_user.otros_votos:
         for item in VALIDACION_PLANILLA:
             if not pf.keys().__contains__(item):
                 return False
@@ -66,11 +70,20 @@ def cantidadMesasExcrutadas(cargo_id):
 
 def totalVotosCargo(cargo_id, frente_id):
     if frente_id == 0:
-        planillas = PlanillaMesa.query.filter(
-            PlanillaMesa.cargo_id == cargo_id).all()
+        # planillas = PlanillaMesa.query.filter(
+        #     PlanillaMesa.cargo_id == cargo_id).all()
         total = 0
-        for planilla in planillas:
-            total += planilla.Total_Votos()
+        # for planilla in planillas:
+        #     total += planilla.Total_Votos()
+        total += db.session.query(func.sum(VotoListaMesa.votos)).join(
+            PlanillaMesa).filter(PlanillaMesa.cargo_id == cargo_id).scalar()
+        total += db.session.query(
+            func.sum(PlanillaMesa.blancos) +
+            func.sum(PlanillaMesa.recurridos) +
+            func.sum(PlanillaMesa.nulos) +
+            func.sum(PlanillaMesa.impugnados)
+        ).filter(PlanillaMesa.cargo_id == 4).scalar()
+
         return total
     else:
         frente = Frente.query.get(frente_id)

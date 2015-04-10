@@ -26,7 +26,7 @@ $(function() {
         select: function (event, ui) {
             if (ui.item) {
                 $("#numero_mesa").val(ui.item.label);
-                getDatosMesa(ui.item.value, true)
+                getDatosMesa(ui.item.value, true);
                 $(this).trigger("change");
                 //$(this).blur();
                 return false;
@@ -39,7 +39,7 @@ $(function() {
         focus: function (event, ui) {
             if (ui.item) {
                 $("#numero_mesa").val(ui.item.label);
-                getDatosMesa(ui.item.value)
+                getDatosMesa(ui.item.value);
                 return false;
             }
             else {
@@ -48,7 +48,28 @@ $(function() {
             }
 
         },
+        autoFocus: true,
     });
+
+    $("#numero_mesa").keydown(function(e) {
+            console.log(e.keyCode);
+            if(e.keyCode == 8){
+                $("#numero_mesa").autocomplete("option", "autoFocus", false);
+            }
+            //var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
+            else if(e.keyCode == 13 || $("#numero_mesa").val().length > 2) {
+                console.log('set true');
+                $("#numero_mesa").autocomplete("option", "autoFocus", true);
+                // menu._activate($.Event({
+                //     type: "mouseenter"
+                // }), menu.element[0].children[0]);
+            }
+            else
+            {
+                console.log('set false');
+                $("#numero_mesa").autocomplete("option", "autoFocus", false);
+            }
+        });
 });
 function getDatosMesa(numero_mesa, focus) {
     $('#datosMesa').load('getDatosMesa/' + numero_mesa);

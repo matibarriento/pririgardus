@@ -1,9 +1,13 @@
 {% extends "_layout.html" %}
 {% block body %}
-{% from "helpers/_formHelpers.html" import render_field %}
+{% from "helpers/_loginHelpers.html" import render_field %}
+<div class="col-md-9 column">
 {% if not current_user.is_authenticated() %}
-<div id="login" tabindex="0">
-    <form method=post action='/'>
+<div id="login" tabindex="0" class="container">
+    <form method=post action='/' class="form-horizontal" role="form">
+        <div class="form-group">{{ render_field(form.usuario)}}</div>
+        <div class="form-group">{{ render_field(form.password)}}</div>
+    {# 
     <table>
         <tr>
             <td>{{ render_field(form.usuario)}}</td>
@@ -11,11 +15,12 @@
         <tr>
             <td>{{ render_field(form.password)}}</td>
         </tr>
-    </table>
-    <p><input type=submit value="Ingresar" id="ingresar"></p>
+    </table> #}
+    <p><input type=submit value="Ingresar" id="ingresar" class="btn btn-default"></p>
     </form>
 </div>
 {% else %}
 <h2>Bienvenido</h2>
 {% endif %}
+</div>
 {% endblock %}

@@ -109,7 +109,7 @@ class Localidad(db.Model):
 
     def getFullRepr(self):
         return "{0} - {1}".format(
-            self.departamento.provincia.descripcion, self.descripcion)
+            self.descripcion, self.departamento.provincia.descripcion)
 
 
 class Seccional(db.Model):
@@ -130,7 +130,7 @@ class Seccional(db.Model):
 
     def __repr__(self):
         return str.upper(
-            'Seccional Nro {0} - {1}'.format(self.numero, self.localidad))
+            'SEC.{0} - {1}'.format(self.numero, self.localidad))
 
     def getMesas(self):
         mesas = []
@@ -145,19 +145,19 @@ class Circuito(db.Model):
 
     __tablename__ = "Circuito"
     id = db.Column(db.Integer, primary_key=True)
-    descripcion = db.Column(db.String(20))
+    numero = db.Column(db.String(20))
     seccional_id = db.Column(db.Integer, db.ForeignKey('Seccional.id'))
     seccional = db.relationship('Seccional', backref=db.backref(
         'circuitos', lazy='dynamic'))
     # propiedad 'escuelas' para obtener sus hijas
 
-    def __init__(self, descripcion='', seccional=''):
-        self.descripcion = descripcion
+    def __init__(self, numero='', seccional=''):
+        self.numero = numero
         self.seccional = seccional
 
     def __repr__(self):
         return str.upper(
-            'Circuito {0} - {1}'.format(self.descripcion, self.seccional))
+            'Circuito {0} - {1}'.format(self.numero, self.seccional))
 
     def getMesas(self):
         mesas = []
@@ -185,7 +185,7 @@ class Escuela(db.Model):
     def __repr__(self):
         return str.upper('Escuela {0} - {1}'.format(
                          self.descripcion,
-                         self.circuito.seccional.localidad.descripcion))
+                         self.circuito))
 
     def getMesas(self):
         return self.mesas.all()
@@ -625,6 +625,7 @@ class Usuario(db.Model):
     roles = db.relationship("Rol", secondary=lambda: UsuarioRoles)
     frentes = db.relationship(
         "Frente", secondary=lambda: UsuarioFrentes)
+    otros_votos = db.Column(db.Boolean, default=True)
 
     def __init__(self, usuario='', passw=''):
         self.usuario = usuario

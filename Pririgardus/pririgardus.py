@@ -18,7 +18,7 @@ from models.models import (db, Mesa, PlanillaMesa, TipoCargo, AlcanceCargo,
 from models.views import (
     DatosMesa, CargarPlanilla, Exportar,
     PlanillaMV, LoginForm, UsuarioMV)
-from models.utils import FLASH_ERROR
+from models.utils import FLASH_ERROR, url_for_default
 from helpers import requires_roles
 
 # NOMBRE_BASE_DATOS = 'pririgardus.db'
@@ -47,6 +47,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 app.config['LOGGER_NAME'] = logger.name
 app.jinja_env.globals['roles'] = Roles
+app.jinja_env.globals['url_for_default'] = url_for_default
 
 ###########################################################################
 
@@ -207,11 +208,10 @@ def Planilla(planilla_id):
             if(len(datosMesa.planillas) > 0):
                 return render_template("helpers/_proximaAccion.html",
                                        datosMesa=datosMesa, botonSalir=True)
-            else:
-                return redirect(url_for("mesas")), 404
         except Exception as e:
             logger.log(logging.ERROR, e)
-        return redirect(url_for("mesas"))
+            flash(e, FLASH_ERROR)
+        return redirect(url_for("mesas")), 404
 
 
 @app.route("/Exportar")

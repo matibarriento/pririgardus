@@ -29,10 +29,10 @@ function getDatosGrafico(){
         $.getJSON(urlDatosGrafico + "/" + cargo_id+ "/" + frente_id, function (data) {
                 datoGraficos = data;
                 if(tipo_grafico == '1'){
-                    new Chartkick.ColumnChart("grafico", datoGraficos, {"library": {"title": "Grf"}});
+                    new Chartkick.ColumnChart("grafico", datoGraficos, {"library": {"title": "", "fontSize": 12}});
                 }
                 if(tipo_grafico == '0'){
-                    new Chartkick.PieChart("grafico", datoGraficos );
+                    new Chartkick.PieChart("grafico", datoGraficos,  {"library": {"title": "", "fontSize": 12}});
                 }
                 // $("#graficoInforme")
                 $(window).scrollTop($("#graficoInforme").offset().top).scrollLeft($("#graficoInforme").offset().left);
