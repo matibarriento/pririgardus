@@ -19,23 +19,11 @@ $ cd Pririgardus
 
 ### NO CREES EL VIRTUALENV, EL SCRIPT LO HACE POR TI.
 
-###Dentro de la carpeta creada
+###Dentro de la carpeta Pririgardus
 ```
 $ sudo chmod +x install.sh
 $ ./install.sh
 ```
-## Iniciar
-
-### Dentro de Pririgardus
-
-```
-$ source bin/activate                       #para activar el virtualenv
-$ python crear_base.py                      #para crear la base y los datos iniciales
-$ python cargar_datos_rosario_muestra.py    #o tu propio script de datos
-$ deactivate
-
-```
-
 ##Deployar
 ```
 $ sudo supervisorctl reload 
