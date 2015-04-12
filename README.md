@@ -17,6 +17,8 @@ $ cd Pririgardus
 
 ##Instalación
 
+### NO CREES EL VIRTUALENV, EL SCRIPT LO HACE POR TI.
+
 ###Dentro de la carpeta Pririgardus
 ```
 $ sudo chmod +x install.sh
