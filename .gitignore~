@@ -1,8 +1,0 @@
-*.pyc
-*.db
-*.zip
-__pycache__/
-.gitignore
-Pririgardus/cargar_datos_rosario_muestra.py
-
-

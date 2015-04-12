@@ -23,20 +23,23 @@ read puerto
 echo "Usuario que ejecuta el servicio (Asegurese que exista y tenga los permisos)"
 read usuario
 
+if [ ! -d "$BASE_DIR/conf" ]; then
+    mkdir "conf"
+fi
 
-if [ ! -f "conf/pririgardus.supervisor.conf" ]; then
+if [ ! -f "$BASE_DIR/conf/pririgardus.supervisor.conf" ]; then
     echo "Creando SUPERVISOR"
     printf "[program:pririgardus]
     command = %s/bin/gunicorn -w %i -b 0.0.0.0:%i pririgardus:app
     directory = %s/Pririgardus/
     user = %s
     autostart=true
-    autorestart=true" "$BASE_DIR" "$workers" "$puerto" "$BASE_DIR" "$usuario" >> "conf/pririgardus.supervisor.conf"
+    autorestart=true" "$BASE_DIR" "$workers" "$puerto" "$BASE_DIR" "$usuario" >> "$BASE_DIR/conf/pririgardus.supervisor.conf"
 
-    sudo ln -s "conf/pririgardus.supervisor.conf" "/etc/supervisor/conf.d/pririgardus.conf"
+    sudo ln -s "$BASE_DIR/conf/pririgardus.supervisor.conf" "/etc/supervisor/conf.d/pririgardus.conf"
 fi
 
-if [ ! -f "conf/pririgardus" ]; then
+if [ ! -f "$BASE_DIR/conf/pririgardus" ]; then
     echo "Creando NGINX"
     printf "server {
 
@@ -47,9 +50,9 @@ if [ ! -f "conf/pririgardus" ]; then
         location /static {
             alias  %s/Pririgardus/static;
         }
-        
-    }" "$puerto" "$BASE_DIR" >> "conf/pririgardus"
 
-    sudo ln -s "conf/pririgardus" "/etc/nginx/sites-available/pririgardus"
+    }" "$puerto" "$BASE_DIR" >> "$BASE_DIR/conf/pririgardus"
+
+    sudo ln -s "$BASE_DIR/conf/pririgardus" "/etc/nginx/sites-available/pririgardus"
     sudo ln -s "/etc/nginx/sites-available/pririgardus" "/etc/nginx/sites-enabled/pririgardus"
 fi
