@@ -1,0 +1,7 @@
+*.pyc
+*.db
+*.zip
+__pycache__/
+*/conf/*
+
+
