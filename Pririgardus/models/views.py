@@ -10,7 +10,7 @@ from flask.ext.admin.contrib.sqla import ModelView
 # from wtforms.validators import InputRequired, NumberRange
 from models.utils import VOTO_NAME_PREFIX, UsuarioInvalido, PasswordInvalida
 from models.models import (db, PlanillaMesa, Cargo, TipoCargo,
-                           Usuario, Roles, Lista)
+                           Usuario, Roles, Lista, ListaCargo)
 
 
 class AttrDict(dict):
@@ -58,7 +58,7 @@ class VotoLista(Form):
         super(VotoLista, self).__init__(obj=votolista)
         self.voto.name = VOTO_NAME_PREFIX + str(votolista.id)
         self.voto.label = "{0} - {1}".format(
-            votolista.lista.posicionLista, votolista.lista.descripcion)
+            votolista.lista.lista.id, votolista.lista.lista.descripcion)
         self.voto.data = votolista.votos
 
 
@@ -73,9 +73,9 @@ class VotoFrente(Form):
         super(VotoFrente, self).__init__(obj=frente)
         self.frente = "{0} - {1}".format(frente.id, frente.descripcion)
         self.clase = frente.id
-        for votolista in planilla.votos.join(Lista).order_by(
-                Lista.posicionLista):
-            if votolista.lista.frente == frente:
+        for votolista in planilla.votos.join(ListaCargo).join(Lista).order_by(
+                Lista.id):
+            if votolista.lista.lista.frente == frente:
                 self.votos_listas.entries.append(VotoLista(votolista))
 
 

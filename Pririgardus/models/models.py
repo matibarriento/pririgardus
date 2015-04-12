@@ -1,5 +1,6 @@
-#models.models.py
+# models.models.py
 from flask.ext.sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 from enum import Enum
 
 db = SQLAlchemy()
@@ -14,17 +15,23 @@ class Pais(db.Model):
     descripcion = db.Column(db.String(20), unique=True)
     # propiedad 'provincias' para obtener sus hijas
 
-    def __init__(self, descripcion=''):
+    def __init__(self, descripcion=None):
         self.descripcion = descripcion
 
     def __repr__(self):
         return str.upper(self.descripcion)
 
     def getMesas(self):
-        mesas = []
-        for pro in self.provincias.all():
-            mesas.extend(pro.getMesas())
-        return mesas
+        return db.session.query(
+            Mesa).join(Escuela).join(Circuito).join(Seccional).join(
+            Localidad).join(Departamento).join(Provincia).join(Pais).filter(
+            Provincia.pais == self).all()
+
+    def getNumerosMesas(self):
+        return [m[0] for m in db.session.query(Mesa.numero).join(
+            Escuela).join(Circuito).join(Seccional).join(
+            Localidad).join(Departamento).join(Provincia).join(Pais).filter(
+            Provincia.pais == self).all()]
 
 
 class Provincia(db.Model):
@@ -39,7 +46,7 @@ class Provincia(db.Model):
                            'provincias', lazy='dynamic'))
     # propiedad 'departamentos' para obtener sus hijas
 
-    def __init__(self, descripcion='', pais=''):
+    def __init__(self, descripcion=None, pais=None):
         self.descripcion = descripcion
         self.pais = pais
 
@@ -47,10 +54,16 @@ class Provincia(db.Model):
         return str.upper(self.descripcion)
 
     def getMesas(self):
-        mesas = []
-        for dep in self.departamentos.all():
-            mesas.extend(dep.getMesas())
-        return mesas
+        return db.session.query(
+            Mesa).join(Escuela).join(Circuito).join(Seccional).join(
+            Localidad).join(Departamento).join(Provincia).filter(
+            Departamento.provincia == self).all()
+
+    def getNumerosMesas(self):
+        return [m[0] for m in db.session.query(Mesa.numero).join(
+            Escuela).join(Circuito).join(Seccional).join(
+            Localidad).join(Departamento).join(Provincia).filter(
+            Departamento.provincia == self).all()]
 
 
 class Departamento(db.Model):
@@ -65,7 +78,7 @@ class Departamento(db.Model):
         'departamentos', lazy='dynamic'))
     # propiedad 'localidades' para obtener sus hijas
 
-    def __init__(self, descripcion='', provincia=''):
+    def __init__(self, descripcion=None, provincia=None):
         self.descripcion = descripcion
         self.provincia = provincia
 
@@ -73,10 +86,16 @@ class Departamento(db.Model):
         return str.upper(self.descripcion)
 
     def getMesas(self):
-        mesas = []
-        for loc in self.localidades.all():
-            mesas.extend(loc.getMesas())
-        return mesas
+        return db.session.query(
+            Mesa).join(Escuela).join(Circuito).join(Seccional).join(
+            Localidad).join(Departamento).filter(
+            Localidad.departamento == self).all()
+
+    def getNumerosMesas(self):
+        return [m[0] for m in db.session.query(Mesa.numero).join(
+            Escuela).join(Circuito).join(Seccional).join(
+            Localidad).join(Departamento).filter(
+            Localidad.departamento == self).all()]
 
     def getFullRepr(self):
         return "{0} - {1}".format(self.provincia.descripcion, self.descripcion)
@@ -94,7 +113,7 @@ class Localidad(db.Model):
         'localidades', lazy='dynamic'))
     # propiedad 'seccionales' para obtener sus hijas
 
-    def __init__(self, descripcion='', departamento=''):
+    def __init__(self, descripcion=None, departamento=None):
         self.descripcion = descripcion
         self.departamento = departamento
 
@@ -102,10 +121,14 @@ class Localidad(db.Model):
         return str.upper(self.descripcion)
 
     def getMesas(self):
-        mesas = []
-        for secc in self.seccionales.all():
-            mesas.extend(secc.getMesas())
-        return mesas
+        return db.session.query(
+            Mesa).join(Escuela).join(Circuito).join(Seccional).join(
+            Localidad).filter(Seccional.localidad == self).all()
+
+    def getNumerosMesas(self):
+        return [m[0] for m in db.session.query(Mesa.numero).join(
+            Escuela).join(Circuito).join(Seccional).join(
+            Localidad).filter(Seccional.localidad == self).all()]
 
     def getFullRepr(self):
         return "{0} - {1}".format(
@@ -117,14 +140,14 @@ class Seccional(db.Model):
     """docstring for Seccional"""
 
     __tablename__ = "Seccional"
-    id = db.Column(db.Integer, primary_key=True)
-    numero = db.Column(db.String(20))
+    # id = db.Column(db.Integer, primary_key=True)
+    numero = db.Column(db.String(10), primary_key=True)
     localidad_id = db.Column(db.Integer, db.ForeignKey('Localidad.id'))
     localidad = db.relationship('Localidad', backref=db.backref(
         'seccionales', lazy='dynamic'))
     # propiedad 'circuitos' para obtener sus hijas
 
-    def __init__(self, numero='', localidad=''):
+    def __init__(self, numero=None, localidad=None):
         self.numero = numero
         self.localidad = localidad
 
@@ -133,10 +156,14 @@ class Seccional(db.Model):
             'SEC.{0} - {1}'.format(self.numero, self.localidad))
 
     def getMesas(self):
-        mesas = []
-        for cir in self.circuitos.all():
-            mesas.extend(cir.getMesas())
-        return mesas
+        return db.session.query(
+            Mesa).join(Escuela).join(Circuito).join(Seccional).filter(
+            Circuito.seccional == self).all()
+
+    def getNumerosMesas(self):
+        return [m[0] for m in db.session.query(Mesa.numero).join(
+            Escuela).join(Circuito).join(Seccional).filter(
+            Circuito.seccional == self).all()]
 
 
 class Circuito(db.Model):
@@ -144,26 +171,30 @@ class Circuito(db.Model):
     """docstring for Circuito"""
 
     __tablename__ = "Circuito"
-    id = db.Column(db.Integer, primary_key=True)
-    numero = db.Column(db.String(20))
-    seccional_id = db.Column(db.Integer, db.ForeignKey('Seccional.id'))
+    # id = db.Column(db.Integer, primary_key=True)
+    numero = db.Column(db.String(20), primary_key=True)
+    seccional_id = db.Column(db.String(10), db.ForeignKey('Seccional.numero'))
     seccional = db.relationship('Seccional', backref=db.backref(
         'circuitos', lazy='dynamic'))
     # propiedad 'escuelas' para obtener sus hijas
 
-    def __init__(self, numero='', seccional=''):
+    def __init__(self, numero=None, numSeccional=None):
         self.numero = numero
-        self.seccional = seccional
+        self.seccional_id = numSeccional
 
     def __repr__(self):
         return str.upper(
             'Circuito {0} - {1}'.format(self.numero, self.seccional))
 
     def getMesas(self):
-        mesas = []
-        for esc in self.escuelas.all():
-            mesas.extend(esc.getMesas())
-        return mesas
+        return db.session.query(
+            Mesa).join(Escuela).join(Circuito).filter(
+            Escuela.circuito == self).all()
+
+    def getNumerosMesas(self):
+        return [m[0] for m in db.session.query(Mesa.numero).join(
+            Escuela).join(Circuito).filter(
+            Escuela.circuito == self).all()]
 
 
 class Escuela(db.Model):
@@ -173,14 +204,16 @@ class Escuela(db.Model):
     __tablename__ = "Escuela"
     id = db.Column(db.Integer, primary_key=True)
     descripcion = db.Column(db.String(20))
-    circuito_id = db.Column(db.Integer, db.ForeignKey('Circuito.id'))
+    circuito_id = db.Column(db.Integer, db.ForeignKey('Circuito.numero'))
     circuito = db.relationship('Circuito', backref=db.backref(
         'escuelas', lazy='dynamic'))
     # propiedad 'mesas' para obtener sus hijas
 
-    def __init__(self, descripcion='', circuito=''):
+    def __init__(self, descripcion=None, numCircuito=None,
+                 mesaDesde=None, mesaHasta=None):
         self.descripcion = descripcion
-        self.circuito = circuito
+        self.circuito_id = numCircuito
+        self.CrearMesas(mesaDesde, mesaHasta)
 
     def __repr__(self):
         return str.upper('Escuela {0} - {1}'.format(
@@ -189,6 +222,15 @@ class Escuela(db.Model):
 
     def getMesas(self):
         return self.mesas.all()
+
+    def getNumerosMesas(self):
+        return [m[0] for m in db.session.query(Mesa.numero).join(
+            Escuela).filter(
+            Mesa.escuela == self).all()]
+
+    def CrearMesas(self, mesaDesde, mesaHasta):
+        for mesanum in range(mesaDesde, mesaHasta + 1):
+            db.session.add(Mesa(mesanum, self))
 
 
 class Mesa(db.Model):
@@ -202,34 +244,41 @@ class Mesa(db.Model):
         'mesas', lazy='dynamic'))
     # propiedad 'planillas' para obtener sus hijas
 
-    def __init__(self, numero='', escuela=''):
+    def __init__(self, numero=None, escuela=None):
         self.numero = numero
         self.escuela = escuela
-        self.Actualizar_Planillas()
 
     def __repr__(self):
         return str(self.numero)
 
     def Actualizar_Planillas(self):
-        cargos = self.getCargos()
-        if(len(cargos) > 0):
-            for cargo in cargos:
-                planilla = db.session.query(
-                    PlanillaMesa).filter(
-                    PlanillaMesa.mesa == self,
-                    PlanillaMesa.cargo == cargo).first()
-                if not planilla:
-                    db.session.add(PlanillaMesa(mesa=self, cargo=cargo))
+        cargos_mesa = db.session.query(Cargo).outerjoin(
+                           PlanillaMesa).filter(
+                           PlanillaMesa.mesa == self)
+        cargos_faltantes = [cargo for cargo in self.getCargos()
+                            if cargo not in cargos_mesa]
+
+        if(len(cargos_faltantes) > 0):
+            planillaCargo = [{
+                    'mesa_numero': self.numero,
+                    'cargo_id': cargo.id} for cargo in cargos_faltantes]
+            db.session.execute(db.insert(PlanillaMesa), planillaCargo)
+            db.session.commit()
 
     def getCargos(self):
         cargos = []
         localidad = self.escuela.circuito.seccional.localidad
-        for lugar in [localidad,
-                      localidad.departamento,
+        for lugar in [localidad.departamento.provincia.pais,
                       localidad.departamento.provincia,
-                      localidad.departamento.provincia.pais]:
-            cargos.extend(lugar.cargos)
+                      localidad.departamento,
+                      localidad
+                      ]:
+            cargos.extend(lugar.cargos.all())
         return cargos
+
+    def getIDCargos(self):
+        cargos = self.getCargos()
+        return [cargo.id for cargo in cargos]
 
 
 class AlcanceCargo(Enum):
@@ -252,7 +301,7 @@ class TipoCargo(db.Model):
     descripcion = db.Column(db.String(50))
     # propiedad 'cargos' para obtener sus hijas
 
-    def __init__(self, descripcion='', alcance_cargo=''):
+    def __init__(self, descripcion=None, alcance_cargo=None):
         self.descripcion = descripcion
         try:
             self.alcance_cargo = alcance_cargo.name
@@ -272,7 +321,7 @@ class Frente(db.Model):
     descripcion = db.Column(db.String(50))
     # propiedad 'listas' para obtener sus hijas
 
-    def __init__(self, id=None, descripcion=''):
+    def __init__(self, id=None, descripcion=None):
         if(id):
             self.id = int(id)
         self.descripcion = descripcion
@@ -281,10 +330,13 @@ class Frente(db.Model):
         return str.upper(self.descripcion)
 
     def Votos_Frente(self, cargo_id):
-        total = 0
-        for lista in self.listas:
-            if lista.cargo_id == cargo_id:
-                total += lista.Votos_Lista()
+        total = db.session.query(func.sum(
+                VotoListaMesa.votos)).join(
+                ListaCargo).join(
+                Lista).join(
+                Frente).filter(
+                Frente.id == self.id,
+                ListaCargo.cargo_id == cargo_id).scalar()
         return total
 
 
@@ -293,29 +345,53 @@ class Lista(db.Model):
     """docstring for Lista"""
 
     __tablename__ = "Lista"
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String(10), primary_key=True)
     descripcion = db.Column(db.String(50))
-    posicionFrente = db.Column(db.Integer)
-    posicionLista = db.Column(db.Integer)
     frente_id = db.Column(db.Integer, db.ForeignKey('Frente.id'))
     frente = db.relationship('Frente', backref=db.backref(
         'listas', lazy='dynamic'))
-    cargo_id = db.Column(db.Integer, db.ForeignKey('Cargo.id'))
-    cargo = db.relationship('Cargo', backref=db.backref(
-        'listas', lazy='dynamic'))
-    # propidad 'votos' para obtener sus hijos
+    # propidad 'cargos' para obtener sus hijos
 
-    def __init__(self, posicionFrente, posicionLista,
-                 descripcion='', frente='', cargo=''):
-        self.posicionFrente = int(posicionFrente)
-        self.posicionLista = int(posicionLista)
+    def __init__(self, id=None, descripcion=None, idFrente=None, frente=None):
+        if(id):
+            self.id = id
         self.descripcion = descripcion
-        self.frente = frente
-        self.cargo = cargo
-        self.Actualizar_VotoLista()
+        if idFrente:
+            self.frente_id = idFrente
+        else:
+            self.frente = frente
 
     def __repr__(self):
         return str.upper(self.frente.descripcion + ' - ' + self.descripcion)
+
+
+class ListaCargo(db.Model):
+
+    """docstring for ListaCargo"""
+
+    __tablename__ = "ListaCargo"
+    id = db.Column(db.Integer, primary_key=True)
+    cargo_id = db.Column(db.Integer, db.ForeignKey('Cargo.id'))
+    cargo = db.relationship('Cargo', backref=db.backref(
+        'listas', lazy='dynamic'))
+    lista_id = db.Column(db.String(10), db.ForeignKey('Lista.id'))
+    lista = db.relationship('Lista', backref=db.backref(
+        'cargos', lazy='dynamic'))
+    candidato_principal = db.Column(db.String(50))
+    # propidad 'votos' para obtener sus hijos
+
+    def __init__(self, idLista=None, cargo=None,
+                 candidatoPrincipal=None, lista=None):
+        self.cargo = cargo
+        if idLista:
+            self.lista_id = idLista
+        else:
+            self.lista = lista
+        self.candidato_principal = candidatoPrincipal
+
+    def __repr__(self):
+        return str.upper("{0} - {1}".format(
+            self.lista.descripcion, self.cargo.descripcion))
 
     def Votos_Lista(self):
         total = 0
@@ -324,26 +400,24 @@ class Lista(db.Model):
         return total
 
     def Actualizar_VotoLista(self):
-        mesas = self.cargo.alcance.getMesas()
-        planillas = []
-        if(len(mesas) > 0):
-            for mesa in mesas:
-                planilla = db.session.query(
-                    PlanillaMesa).filter(
-                    PlanillaMesa.mesa == mesa,
-                    PlanillaMesa.cargo == self.cargo).first()
-                if planilla:
-                    planillas.append(planilla)
-            if(len(planillas) > 0):
-                for planilla in planillas:
-                    votolista = db.session.query(
-                        VotoListaMesa).filter(
-                        VotoListaMesa.planilla_mesa == planilla,
-                        VotoListaMesa.lista == self).first()
-                    if not votolista:
-                        db.session.add(
-                            VotoListaMesa(planilla=planilla, lista=self))
-                db.session.commit()
+        mesas = self.cargo.alcance.getNumerosMesas()
+        # planillas de la mesa
+        planillas = db.session.query(PlanillaMesa).filter(
+            PlanillaMesa.mesa_numero.in_(mesas),
+            PlanillaMesa.cargo == self.cargo)
+        # planillas que no tienen el VotoLista
+        planillas = planillas.except_(
+            planillas.outerjoin(
+                VotoListaMesa).filter(
+                VotoListaMesa.lista == self))
+        if(planillas.count() > 0):
+            # VotoLista a crear
+            votoLista = [{
+                    'planilla_mesa_id': planilla.id,
+                    'lista_id': self.id,
+                    'descripcion': repr(self)} for planilla in planillas]
+            db.session.execute(db.insert(VotoListaMesa), votoLista)
+            db.session.commit()
 
 
 class Cargo(db.Model):
@@ -364,7 +438,7 @@ class Cargo(db.Model):
         'polymorphic_on': type
     }
 
-    def __init__(self, tipo_cargo=''):
+    def __init__(self, tipo_cargo=None):
         self.tipo_cargo = tipo_cargo
 
 
@@ -385,27 +459,14 @@ class Cargo_Local(Cargo):
         'polymorphic_identity': AlcanceCargo.Cargo_Local.name,
     }
 
-    def __init__(self, localidad='', tipo_cargo=''):
+    def __init__(self, localidad=None, tipo_cargo=None):
         super(Cargo_Local, self).__init__(tipo_cargo)
         self.alcance = localidad
-        self.descripcion = str.upper(self.tipo_cargo.descripcion
-                                     + ' - ' + self.alcance.descripcion)
-        self.Actualizar_Planillas()
+        self.descripcion = str.upper(self.tipo_cargo.descripcion +
+                                     ' - ' + self.alcance.descripcion)
 
     def __repr__(self):
         return self.descripcion
-
-    def Actualizar_Planillas(self):
-        #planillas = []
-        mesas = self.alcance.getMesas()
-        if(len(mesas) > 0):
-            for mesa in mesas:
-                planilla = db.session.query(
-                    PlanillaMesa).filter(
-                    PlanillaMesa.mesa == mesa,
-                    PlanillaMesa.cargo == self).first()
-                if not planilla:
-                    db.session.add(PlanillaMesa(mesa=mesa, cargo=self))
 
 
 class Cargo_Departamental(Cargo):
@@ -425,27 +486,14 @@ class Cargo_Departamental(Cargo):
         'polymorphic_identity': AlcanceCargo.Cargo_Departamental.name,
     }
 
-    def __init__(self, departamento='', tipo_cargo=''):
+    def __init__(self, departamento=None, tipo_cargo=None):
         super(Cargo_Departamental, self).__init__(tipo_cargo)
         self.alcance = departamento
-        self.descripcion = str.upper(self.tipo_cargo.descripcion
-                                     + ' - ' + self.alcance.descripcion)
-        self.Actualizar_Planillas()
+        self.descripcion = str.upper(self.tipo_cargo.descripcion +
+                                     ' - ' + self.alcance.descripcion)
 
     def __repr__(self):
         return self.descripcion
-
-    def Actualizar_Planillas(self):
-        #planillas = []
-        mesas = self.alcance.getMesas()
-        if(len(mesas) > 0):
-            for mesa in mesas:
-                planilla = db.session.query(
-                    PlanillaMesa).filter(
-                    PlanillaMesa.mesa == mesa,
-                    PlanillaMesa.cargo == self).first()
-                if not planilla:
-                    db.session.add(PlanillaMesa(mesa=mesa, cargo=self))
 
 
 class Cargo_Provincial(Cargo):
@@ -465,26 +513,14 @@ class Cargo_Provincial(Cargo):
         'polymorphic_identity': AlcanceCargo.Cargo_Provincial.name,
     }
 
-    def __init__(self, provincia='', tipo_cargo=''):
+    def __init__(self, provincia=None, tipo_cargo=None):
         super(Cargo_Provincial, self).__init__(tipo_cargo)
         self.alcance = provincia
-        self.descripcion = str.upper(self.tipo_cargo.descripcion
-                                     + ' - ' + self.alcance.descripcion)
-        self.Actualizar_Planillas()
+        self.descripcion = str.upper(self.tipo_cargo.descripcion +
+                                     ' - ' + self.alcance.descripcion)
 
     def __repr__(self):
         return self.descripcion
-
-    def Actualizar_Planillas(self):
-        mesas = self.alcance.getMesas()
-        if(len(mesas) > 0):
-            for mesa in mesas:
-                planilla = db.session.query(
-                    PlanillaMesa).filter(
-                    PlanillaMesa.mesa == mesa,
-                    PlanillaMesa.cargo == self).first()
-                if not planilla:
-                    db.session.add(PlanillaMesa(mesa=mesa, cargo=self))
 
 
 class Cargo_Nacional(Cargo):
@@ -504,26 +540,14 @@ class Cargo_Nacional(Cargo):
         'polymorphic_identity': AlcanceCargo.Cargo_Nacional.name,
     }
 
-    def __init__(self, pais='', tipo_cargo=''):
+    def __init__(self, pais=None, tipo_cargo=None):
         super(Cargo_Nacional, self).__init__(tipo_cargo)
         self.alcance = pais
-        self.descripcion = str.upper(self.tipo_cargo.descripcion
-                                     + ' - ' + self.alcance.descripcion)
-        self.Actualizar_Planillas()
+        self.descripcion = str.upper(self.tipo_cargo.descripcion +
+                                     ' - ' + self.alcance.descripcion)
 
     def __repr__(self):
         return self.descripcion
-
-    def Actualizar_Planillas(self):
-        mesas = self.alcance.getMesas()
-        if(len(mesas) > 0):
-            for mesa in mesas:
-                planilla = db.session.query(
-                    PlanillaMesa).filter(
-                    PlanillaMesa.mesa == mesa,
-                    PlanillaMesa.cargo == self).first()
-                if not planilla:
-                    db.session.add(PlanillaMesa(mesa=mesa, cargo=self))
 
 
 class PlanillaMesa(db.Model):
@@ -545,10 +569,9 @@ class PlanillaMesa(db.Model):
         'planillas', lazy='dynamic'))
     # propiedad 'votos' para obtener sus hijas
 
-    def __init__(self, mesa='', cargo=''):
+    def __init__(self, mesa=None, cargo=None):
         self.mesa = mesa
         self.cargo = cargo
-        self.Actualizar_VotoLista()
 
     def __repr__(self):
         return str.upper('Planilla de mesa ' +
@@ -561,37 +584,34 @@ class PlanillaMesa(db.Model):
             total += voto.votos
         return total
 
+    def Total_Votos_Afirmativos_Validos(self):
+        total = 0
+        for voto in self.votos:
+            total += voto.votos
+        return total
+
     def Total_Votos_Validos(self):
         total = self.blancos
         for voto in self.votos:
             total += voto.votos
         return total
 
-    def Actualizar_VotoLista(self):
-        listas = self.cargo.listas.all()
-        if(len(listas) > 0):
-            for lista in listas:
-                votolista = db.session.query(
-                    VotoListaMesa).filter(
-                    VotoListaMesa.planilla_mesa == self).filter(
-                    VotoListaMesa.lista == lista).first()
-                if not votolista:
-                    db.session.add(
-                        VotoListaMesa(planilla=self, lista=lista))
-
     def getFrentes(self):
         frentes = []
-        [frentes.append(voto.lista.frente)
-            for voto in self.votos.join(Lista).order_by(Lista.posicionFrente)
-            if voto.lista.frente not in frentes
-            and voto.lista.frente is not None]
+        [frentes.append(voto.lista.lista.frente)
+            for voto in self.votos.join(
+                                        ListaCargo).join(
+                                        Lista).order_by(
+                                        Lista.id)
+            if voto.lista.lista.frente not in frentes and
+            voto.lista.lista.frente is not None]
 
         return frentes
 
 
 class VotoListaMesa(db.Model):
 
-    """docstring for Lista"""
+    """docstring for VotoListaMesa"""
 
     __tablename__ = "VotoListaMesa"
     id = db.Column(db.Integer, primary_key=True)
@@ -601,11 +621,11 @@ class VotoListaMesa(db.Model):
         db.Integer, db.ForeignKey('PlanillaMesa.id'))
     planilla_mesa = db.relationship('PlanillaMesa', backref=db.backref(
         'votos', lazy='dynamic'))
-    lista_id = db.Column(db.Integer, db.ForeignKey('Lista.id'))
-    lista = db.relationship('Lista', backref=db.backref(
+    lista_id = db.Column(db.String(10), db.ForeignKey('ListaCargo.id'))
+    lista = db.relationship('ListaCargo', backref=db.backref(
         'votos', lazy='dynamic'))
 
-    def __init__(self, planilla='', lista=''):
+    def __init__(self, planilla=None, lista=None):
         self.descripcion = repr(lista)
         self.planilla_mesa = planilla
         self.lista = lista
@@ -627,7 +647,7 @@ class Usuario(db.Model):
         "Frente", secondary=lambda: UsuarioFrentes)
     otros_votos = db.Column(db.Boolean, default=True)
 
-    def __init__(self, usuario='', passw=''):
+    def __init__(self, usuario=None, passw=None):
         self.usuario = usuario
         self.contraseña = passw
 
@@ -667,7 +687,7 @@ class Rol(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     descripcion = db.Column(db.String(50), unique=True)
 
-    def __init__(self, rol=''):
+    def __init__(self, rol=None):
         try:
             self.id = rol.value
             self.descripcion = rol.name
@@ -697,3 +717,49 @@ UsuarioFrentes = db.Table(
               db.Integer,
               db.ForeignKey("Frente.id"), primary_key=True)
 )
+
+
+#############################################################################
+
+# PARA INICIALIZAR
+
+def Actualizar_Todas_Planillas():
+    planillas_faltantes = []
+    for mesa in Mesa.query.all():
+        cargos_mesa = db.session.query(Cargo).outerjoin(
+                           PlanillaMesa).filter(
+                           PlanillaMesa.mesa == mesa)
+        cargos_faltantes = [cargo for cargo in mesa.getCargos()
+                            if cargo not in cargos_mesa]
+
+        if(len(cargos_faltantes) > 0):
+            planillaCargo = [{
+                    'mesa_numero': mesa.numero,
+                    'cargo_id': cargo.id} for cargo in cargos_faltantes]
+            planillas_faltantes.extend(planillaCargo)
+    db.session.execute(db.insert(PlanillaMesa), planillas_faltantes)
+    db.session.commit()
+
+
+def Actualizar_Todos_VotoLista():
+    votoslistas_faltante = []
+    for listacargo in ListaCargo.query.all():
+        mesas = listacargo.cargo.alcance.getNumerosMesas()
+        # planillas de la mesa
+        planillas = db.session.query(PlanillaMesa).filter(
+            PlanillaMesa.mesa_numero.in_(mesas),
+            PlanillaMesa.cargo == listacargo.cargo)
+        # planillas que no tienen el VotoLista
+        planillas = planillas.except_(
+            planillas.outerjoin(
+                VotoListaMesa).filter(
+                VotoListaMesa.lista == listacargo))
+        if(planillas.count() > 0):
+            # VotoLista a crear
+            votoLista = [{
+                    'planilla_mesa_id': planilla.id,
+                    'lista_id': listacargo.id,
+                    'descripcion': repr(listacargo)} for planilla in planillas]
+            votoslistas_faltante.extend(votoLista)
+    db.session.execute(db.insert(VotoListaMesa), votoslistas_faltante)
+    db.session.commit()
