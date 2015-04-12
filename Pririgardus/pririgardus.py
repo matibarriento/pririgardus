@@ -14,7 +14,7 @@ from flask.ext.login import (
 from logica import (parsearPlanilla, exportarPlanilla,
                     cantidadMesasExcrutadas, datosInforme, totalVotosCargo)
 from models.models import (db, Mesa, PlanillaMesa, TipoCargo, AlcanceCargo,
-                           Cargo, Frente, Lista, Usuario, Roles)
+                           Cargo, Frente, Lista, ListaCargo, Usuario, Roles)
 from models.views import (
     DatosMesa, CargarPlanilla, Exportar,
     PlanillaMV, LoginForm, UsuarioMV)
@@ -107,7 +107,7 @@ def getAlcanceTipoCargo(tipo_cargo_id):
 @app.route("/getFrentesCargo/<cargo_id>")
 def getFrentesCargo(cargo_id):
     frentes = db.session.query(Frente).join(
-        Frente.listas).filter(Lista.cargo_id == 1).all()
+        Lista).join(ListaCargo).filter(ListaCargo.cargo_id == 1).all()
     response = [(0, "Todos")]
     for frente in frentes:
         response.append((frente.id, frente.descripcion))
@@ -211,6 +211,7 @@ def Planilla(planilla_id):
         except Exception as e:
             logger.log(logging.ERROR, e)
             flash(e, FLASH_ERROR)
+            raise e
         return redirect(url_for("mesas")), 404
 
 

@@ -3,7 +3,7 @@
 from flask.ext.login import current_user
 from sqlalchemy import func
 from models.models import (
-    db, PlanillaMesa, VotoListaMesa, Cargo, Frente, Lista)
+    db, PlanillaMesa, VotoListaMesa, Cargo, Frente, Lista, ListaCargo)
 from models.utils import (VOTO_NAME_PREFIX, VALIDACION_PLANILLA,
                           PlanillaEscrutada, PlanillaInvalida)
 
@@ -41,7 +41,7 @@ def validarForm(planilla, planilla_form):
         voto
         for voto
         in planilla.votos.all()
-        if voto.lista.frente in current_user.frentes or
+        if voto.lista.lista.frente in current_user.frentes or
         len(current_user.frentes) == 0])
     if not cant_votos_form == cant_votos_frente_usuario:
         return False
@@ -93,15 +93,20 @@ def totalVotosCargo(cargo_id, frente_id):
 def datosInforme(cargo_id, frente_id):
     # sorted(info, key=lambda fren: fren[1], reverse=True)
     if frente_id == 0:
-        frentes = Frente.query.join(Lista).filter(
-            Lista.cargo_id == cargo_id).all()
+        frentes = Frente.query.join(Lista).join(ListaCargo).filter(
+            ListaCargo.cargo_id == cargo_id).all()
         return sorted([
             (str(frente.descripcion), frente.Votos_Frente(cargo_id))
             for frente in frentes], key=lambda fren: fren[1], reverse=True)
     else:
-        frente = Frente.query.get(frente_id)
-        listas_frente = frente.listas.join(
-            Cargo).filter(Cargo.id == cargo_id).all()
-        return sorted([(str(lista.descripcion), lista.Votos_Lista())
-                       for lista in listas_frente],
+        listas_frente_cargo = db.session.query(ListaCargo).join(
+            Lista).join(
+            Frente).filter(
+            Frente.id == frente_id,
+            ListaCargo.cargo_id == cargo_id)
+        #frente = Frente.query.get(frente_id)
+        #listas_frente = frente.listas.join(ListaCargo).join(
+        #    Cargo).filter(Cargo.id == cargo_id).all()
+        return sorted([(str(lista.lista.descripcion), lista.Votos_Lista())
+                       for lista in listas_frente_cargo],
                       key=lambda fren: fren[1], reverse=True)
