@@ -4,7 +4,8 @@ Pririgardus es un apliación para llevar los computos de comicios
 
 ##Requerimientos de software
 ```
-$ sudo apt-get install python3.4 python3.4-dev nginx supervisor virtualenv git 
+$ sudo apt-get install python3.4 python3.4-dev nginx supervisor python-pip git
+$ sudo pip install virtualenv 
 ```
 
 ##Descargar
@@ -12,7 +13,7 @@ $ sudo apt-get install python3.4 python3.4-dev nginx supervisor virtualenv git
 ###Estando en la carpeta desde donde se quiera usar.
 ```
 $ git clone https://github.com/matibarriento/pririgardus.git
-$ cd Pririgardus
+$ cd pririgardus
 ```
 
 ##Instalación
@@ -21,17 +22,19 @@ $ cd Pririgardus
 
 ###Dentro de la carpeta creada
 ```
+$ cd pririgardus
 $ sudo chmod +x install.sh
 $ ./install.sh
 ```
 ## Iniciar
 
-### Dentro de Pririgardus
+### Dentro de pririgardus
 
 ```
 $ source bin/activate                       #para activar el virtualenv
 $ python crear_base.py                      #para crear la base y los datos iniciales
-$ python cargar_datos_rosario_muestra.py    #o tu propio script de datos
+$ python "tu propio script de datos"
+$ ipython                                   # para hacer pruebas o cargas
 $ deactivate
 
 ```
@@ -44,6 +47,16 @@ $ sudo supervisorctl start pririgardus
 $ sudo service nginx status
 $ sudo service nginx start
 ```
+##Usuario admin
+usuario: SU
+contraseña: prilektoj
 
 
+#TODO
 
+###ABM de Datos
+###Mejorar documentación
+###Informes más detallados
+###Sistema D'Hondt
+###Otros
+ 
