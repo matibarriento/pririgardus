@@ -61,11 +61,11 @@ def cantidadMesasExcrutadas(cargo_id):
     cargo = Cargo.query.filter(Cargo.id == cargo_id).first()
     totales = cargo.planillas.count()
     escrutadas = cargo.planillas.filter(PlanillaMesa.escrutada).count()
-    if escrutadas == 0:
+    if totales == 0:
         resultado = 0
     else:
         resultado = round(escrutadas / totales * 100, 3)
-    return "{0}% de {1} mesas".format(resultado, totales)
+    return "{0}% = {1} mesas".format(resultado, escrutadas)
 
 
 def totalVotosCargo(cargo_id, frente_id):
