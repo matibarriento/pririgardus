@@ -3,9 +3,11 @@
 from flask.ext.login import current_user
 from sqlalchemy import func
 from models.models import (
-    db, PlanillaMesa, VotoListaMesa, Cargo, Frente, Lista, ListaCargo)
+    db, PlanillaMesa, VotoListaMesa, Cargo, Frente, Lista, ListaCargo,
+    Localidad)
 from models.utils import (VOTO_NAME_PREFIX, VALIDACION_PLANILLA,
                           PlanillaEscrutada, PlanillaInvalida)
+from models.views import MesaExportada, CargosMesa
 
 
 def parsearPlanilla(planilla_id, planilla_form):
@@ -57,6 +59,31 @@ def exportarPlanilla(cargo_id):
     # cargo = Cargo.query.filter(Cargo.id == 2).first()
 
 
+def exportarInformeMesas(localidad_id):
+    try:
+        from exportacion import exportarMesas
+    except Exception as e:
+        raise e
+    lMesasExportadas = []
+    for mesa in db.session.query(Localidad).get(localidad_id).getMesas():
+        mesaExpor = MesaExportada(mesa.numero)
+        if mesa.estaEscrutada():
+            listas = db.session.query(Lista).outerjoin(
+                ListaCargo).outerjoin(
+                VotoListaMesa).outerjoin(
+                PlanillaMesa).filter(PlanillaMesa.mesa == mesa).all()
+            mesaExpor.listas = listas
+            for cargo in Cargo.query.all():
+                cargoMesa = CargosMesa(cargo.descripcion)
+                for lista in listas:
+                    # cargoMesa.votoListas.append(
+                    #     (lista.descripcion, lista.Votos_Lista(cargo.id)))
+                    cargoMesa.votoListas.append(lista.Votos_Lista(cargo.id))
+                mesaExpor.cargos.append(cargoMesa)
+        lMesasExportadas.append(mesaExpor)
+    exportarMesas(lMesasExportadas)
+
+
 def cantidadMesasExcrutadas(cargo_id):
     cargo = Cargo.query.filter(Cargo.id == cargo_id).first()
     totales = cargo.planillas.count()
@@ -70,11 +97,7 @@ def cantidadMesasExcrutadas(cargo_id):
 
 def totalVotosCargo(cargo_id, frente_id):
     if frente_id == 0:
-        # planillas = PlanillaMesa.query.filter(
-        #     PlanillaMesa.cargo_id == cargo_id).all()
         total = 0
-        # for planilla in planillas:
-        #     total += planilla.Total_Votos()
         total += db.session.query(func.sum(VotoListaMesa.votos)).join(
             PlanillaMesa).filter(PlanillaMesa.cargo_id == cargo_id).scalar()
         total += db.session.query(
@@ -82,7 +105,7 @@ def totalVotosCargo(cargo_id, frente_id):
             func.sum(PlanillaMesa.recurridos) +
             func.sum(PlanillaMesa.nulos) +
             func.sum(PlanillaMesa.impugnados)
-        ).filter(PlanillaMesa.cargo_id == 4).scalar()
+        ).filter(PlanillaMesa.cargo_id == cargo_id).scalar()
 
         return total
     else:

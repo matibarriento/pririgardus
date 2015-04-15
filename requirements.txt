@@ -11,3 +11,5 @@ Werkzeug==0.10.1
 gunicorn==19.3.0
 ipython==3.0.0
 itsdangerous==0.24
+lxml==3.4.2
+python-docx==0.8.5

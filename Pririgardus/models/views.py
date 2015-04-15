@@ -237,3 +237,24 @@ class LoginForm(Form):
     def get_user(self):
         return db.session.query(Usuario).filter(
             Usuario.usuario == self.usuario.data).first()
+
+
+class MesaExportada(object):
+
+    """docstring for MesaExportada"""
+
+    def __init__(self, numeroMesa):
+        super(MesaExportada, self).__init__()
+        self.numeroMesa = numeroMesa
+        self.listas = []
+        self.cargos = []
+
+
+class CargosMesa(object):
+
+    """docstring for CargosMesa"""
+
+    def __init__(self, descripcion):
+        super(CargosMesa, self).__init__()
+        self.descripcion = descripcion
+        self.votoListas = []

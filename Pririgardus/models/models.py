@@ -280,6 +280,12 @@ class Mesa(db.Model):
         cargos = self.getCargos()
         return [cargo.id for cargo in cargos]
 
+    def estaEscrutada(self):
+        for planilla in self.planillas:
+            if planilla.escrutada is False:
+                return False
+        return True
+
 
 class AlcanceCargo(Enum):
 
@@ -363,6 +369,15 @@ class Lista(db.Model):
 
     def __repr__(self):
         return str.upper(self.frente.descripcion + ' - ' + self.descripcion)
+
+    def Votos_Lista(self, cargo_id):
+        total = db.session.query(func.sum(
+                VotoListaMesa.votos)).join(
+                ListaCargo).join(
+                Lista).filter(
+                Lista.id == self.id,
+                ListaCargo.cargo_id == cargo_id).scalar()
+        return total
 
 
 class ListaCargo(db.Model):
