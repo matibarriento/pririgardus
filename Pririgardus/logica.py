@@ -82,7 +82,7 @@ def totalVotosCargo(cargo_id, frente_id):
             func.sum(PlanillaMesa.recurridos) +
             func.sum(PlanillaMesa.nulos) +
             func.sum(PlanillaMesa.impugnados)
-        ).filter(PlanillaMesa.cargo_id == 4).scalar()
+        ).filter(PlanillaMesa.cargo_id == cargo_id).scalar()
 
         return total
     else:
