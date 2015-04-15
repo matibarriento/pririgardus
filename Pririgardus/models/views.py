@@ -214,6 +214,14 @@ class PlanillaMV(ModelView):
                 db.session.add(planilla)
         db.session.commit()
 
+    @action("Desescrutar Todas", "Desescrutar Todas")
+    def desescrutarTodas(self, listID=None):
+        for planilla in db.session.query(PlanillaMesa).all():
+            if planilla:
+                planilla.escrutada = False
+                db.session.add(planilla)
+        db.session.commit()
+
     def is_accessible(self):
         return (current_user.tieneRol(Roles.Administrador) and
                 current_user.is_authenticated())
