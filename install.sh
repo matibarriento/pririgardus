@@ -85,5 +85,5 @@ sudo ln -s "$BASE_DIR/conf/pririgardus" "/etc/nginx/sites-available/pririgardus"
 sudo ln -s "/etc/nginx/sites-available/pririgardus" "/etc/nginx/sites-enabled/pririgardus"
         
 
-sudo iptables -I INPUT -p tcp --dport ${port} -j ACCEPT
+sudo iptables -I INPUT -p tcp --dport ${portA} -j ACCEPT
 
