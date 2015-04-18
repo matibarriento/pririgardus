@@ -103,11 +103,22 @@ def getAlcanceTipoCargo(tipo_cargo_id):
     return jsonify(response)
 
 
+@app.route("/getSeccionalesLugar")
+@app.route("/getSeccionalesLugar/<cargo_id>")
+def getSeccionalesLugar(cargo_id):
+    response = [('0', "Todas")]
+    seccionales = db.session.query(Cargo).get(
+        cargo_id).alcance.getSeccionales()
+    for seccional in seccionales:
+        response.append((seccional.numero, seccional.__repr__()))
+    return jsonify(response)
+
+
 @app.route("/getFrentesCargo")
 @app.route("/getFrentesCargo/<cargo_id>")
 def getFrentesCargo(cargo_id):
     frentes = db.session.query(Frente).join(
-        Lista).join(ListaCargo).filter(ListaCargo.cargo_id == 1).all()
+        Lista).join(ListaCargo).filter(ListaCargo.cargo_id == cargo_id).all()
     response = [(0, "Todos")]
     for frente in frentes:
         response.append((frente.id, frente.descripcion))
@@ -115,9 +126,10 @@ def getFrentesCargo(cargo_id):
 
 
 @app.route("/getDatosGrafico")
-@app.route("/getDatosGrafico/<cargo_id>/<frente_id>")
-def getDatosGrafico(cargo_id, frente_id):
-    return jsonify(datosInforme(int(cargo_id), int(frente_id)))
+@app.route("/getDatosGrafico/<cargo_id>/<secc_num>/<frente_id>")
+def getDatosGrafico(cargo_id, secc_num, frente_id):
+    secc = secc_num if secc_num != '0' else None
+    return jsonify(datosInforme(int(cargo_id), secc, int(frente_id)))
 
 ###########################################################################
 
@@ -132,19 +144,21 @@ def getDatosMesa(numero_mesa):
 
 
 @app.route("/getInforme")
-@app.route("/getInforme/<tipo_cargo_id>/<cargo_id>/<frente_id>/<tipo_grafico>",
+@app.route("/getInforme/<tipo_cargo_id>/<cargo_id>/<secc_num>/<frente_id>"
+           "/<tipo_grafico>",
            methods=['GET'])
-def getInforme(tipo_cargo_id, cargo_id, frente_id, tipo_grafico):
-    mesasEscrutadas = cantidadMesasExcrutadas(int(cargo_id))
-    totalVotos = totalVotosCargo(int(cargo_id), int(frente_id))
+def getInforme(tipo_cargo_id, cargo_id, secc_num, frente_id, tipo_grafico):
+    secc = secc_num if secc_num != '0' else None
+    mesasEscrutadas = cantidadMesasExcrutadas(int(cargo_id), secc)
+    totalVotos = totalVotosCargo(int(cargo_id), int(frente_id), secc)
     tiempoInforme = time.time()
     momentoInforme = datetime.datetime.fromtimestamp(
         tiempoInforme).strftime('%H:%M:%S')
     return render_template("helpers/_graficoInforme.html",
                            mesasEscrutadas=mesasEscrutadas,
                            totalVotos=totalVotos,
-                           cargo_id=cargo_id, frente_id=frente_id,
-                           tipo_grafico=tipo_grafico,
+                           cargo_id=cargo_id, secc_num=secc_num,
+                           frente_id=frente_id, tipo_grafico=tipo_grafico,
                            momentoInforme=momentoInforme)
 
 ###########################################################################
@@ -211,8 +225,8 @@ def Planilla(planilla_id):
         except Exception as e:
             logger.log(logging.ERROR, e)
             flash(e, FLASH_ERROR)
-            raise e
-        return redirect(url_for("mesas")), 404
+            return redirect(url_for("mesas")), 404
+        return redirect(url_for("mesas"))
 
 
 @app.route("/Exportar")

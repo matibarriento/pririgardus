@@ -3,16 +3,18 @@ $(function() {
     $("#informesLink").addClass("active");
     crearAutocompletado($("#alcanceCargo"), $("#cargoID"), false);
     crearAutocompletado(("#frentes"), $("#frenteID"), true);
+    crearAutocompletado(("#seccionales"), $("#seccionalNum"), true);
 
     $('#informe').click(function(e) {
             $("#graficoInforme").load(
-                urlInforme +"/" + $("#tipoCargo").val() + "/" + $("#cargoID").val()+ "/" + $("#frenteID").val() + "/" + $("#tipoGrafico").val());
+                urlInforme +"/" + $("#tipoCargo").val() + "/" + $("#cargoID").val()+ "/"+ $("#seccionalNum").val() +"/" + $("#frenteID").val() + "/" + $("#tipoGrafico").val());
             e.preventDefault();
         });
     
 
     Anidado($("#tipoCargo"), $("#alcanceCargo"), $("#cargoID"), $("#informe"));
     Anidado($("#cargoID"), $("#frentes"), $("#frenteID"), $("#informe"));
+    Anidado($("#cargoID"), $("#seccionales"), $("#seccionalNum"), $("#informe"));
     
     $("#tipoCargo").on("change", function()
     {
@@ -31,12 +33,18 @@ $(function() {
         if(tieneValor){
             getFrentes($("#cargoID").val());
         }
+
+        clearHijo($("#seccionales"), $("#seccionalNum"), $("#informe"));
+        var tieneValor = Anidado($("#cargoID"), $("#seccionales"), $("#seccionalNum"), $("#informe"));
+        if(tieneValor){
+            getSeccionales($("#cargoID").val());
+        }
     });
     setInterval(function(){
         if(! $("#informe").prop("disabled")){
             $("#informe").click();
         }
-    },60000000); //milisegundos, 1 minuto
+    },600000); //milisegundos, 1 minuto
 
 
 });
@@ -76,15 +84,18 @@ function getAlcanceCargos(tipo_cargo_id){
     });
 }
 
-function getAlcanceCargos(tipo_cargo_id){
-    $.getJSON(urlAlcances + "/" + tipo_cargo_id, function (data) {
-        var alcanceCargos = $.map(data, function (value, key) {
+function getSeccionales(cargo_id){
+    $.getJSON(urlSeccionales + "/" + cargo_id, function (data) {
+        var seccionales = $.map(data, function (value, key) {
             return {
                 label: value,
                 value: key
             };
         });
-        $("#alcanceCargo").autocomplete("option", "source", alcanceCargos);
+        $("#seccionales").autocomplete("option", "source", seccionales);
+        valorDefault = findLabel(seccionales, 0);
+        $("#seccionales").val(valorDefault);
+        $("#seccionales").trigger("change");
     });
 }
 

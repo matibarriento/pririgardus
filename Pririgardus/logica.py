@@ -1,9 +1,10 @@
 # logica.py
 
 from flask.ext.login import current_user
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from models.models import (
-    db, PlanillaMesa, VotoListaMesa, Cargo, Frente, Lista, ListaCargo)
+    db, PlanillaMesa, VotoListaMesa, Cargo, Frente, Lista, ListaCargo,
+    Mesa, Escuela, Circuito)
 from models.utils import (VOTO_NAME_PREFIX, VALIDACION_PLANILLA,
                           PlanillaEscrutada, PlanillaInvalida)
 
@@ -57,10 +58,15 @@ def exportarPlanilla(cargo_id):
     # cargo = Cargo.query.filter(Cargo.id == 2).first()
 
 
-def cantidadMesasExcrutadas(cargo_id):
+def cantidadMesasExcrutadas(cargo_id, secc_num):
     cargo = Cargo.query.filter(Cargo.id == cargo_id).first()
     totales = cargo.planillas.count()
-    escrutadas = cargo.planillas.filter(PlanillaMesa.escrutada).count()
+    escrutadas = cargo.planillas.join(
+        Mesa).join(
+        Escuela).join(
+        Circuito).filter(or_(Circuito.seccional_id == secc_num,
+                             secc_num is None),
+                         PlanillaMesa.escrutada).count()
     if totales == 0:
         resultado = 0
     else:
@@ -68,35 +74,41 @@ def cantidadMesasExcrutadas(cargo_id):
     return "{0}% = {1} mesas".format(resultado, escrutadas)
 
 
-def totalVotosCargo(cargo_id, frente_id):
+def totalVotosCargo(cargo_id, frente_id, secc_num):
     if frente_id == 0:
-        # planillas = PlanillaMesa.query.filter(
-        #     PlanillaMesa.cargo_id == cargo_id).all()
         total = 0
-        # for planilla in planillas:
-        #     total += planilla.Total_Votos()
         total += db.session.query(func.sum(VotoListaMesa.votos)).join(
-            PlanillaMesa).filter(PlanillaMesa.cargo_id == cargo_id).scalar()
+            PlanillaMesa).join(
+            Mesa).join(
+            Escuela).join(
+            Circuito).filter(or_(Circuito.seccional_id == secc_num,
+                                 secc_num is None),
+                             PlanillaMesa.cargo_id == cargo_id).scalar()
         total += db.session.query(
             func.sum(PlanillaMesa.blancos) +
             func.sum(PlanillaMesa.recurridos) +
             func.sum(PlanillaMesa.nulos) +
             func.sum(PlanillaMesa.impugnados)
-        ).filter(PlanillaMesa.cargo_id == cargo_id).scalar()
+        ).join(
+            Mesa).join(
+            Escuela).join(
+            Circuito).filter(or_(Circuito.seccional_id == secc_num,
+                                 secc_num is None),
+                             PlanillaMesa.cargo_id == cargo_id).scalar()
 
         return total
     else:
         frente = Frente.query.get(frente_id)
-        return frente.Votos_Frente(cargo_id)
+        return frente.Votos_Frente(cargo_id, secc_num)
 
 
-def datosInforme(cargo_id, frente_id):
+def datosInforme(cargo_id, secc_num, frente_id):
     # sorted(info, key=lambda fren: fren[1], reverse=True)
     if frente_id == 0:
         frentes = Frente.query.join(Lista).join(ListaCargo).filter(
             ListaCargo.cargo_id == cargo_id).all()
         return sorted([
-            (str(frente.descripcion), frente.Votos_Frente(cargo_id))
+            (str(frente.descripcion), frente.Votos_Frente(cargo_id, secc_num))
             for frente in frentes], key=lambda fren: fren[1], reverse=True)
     else:
         listas_frente_cargo = db.session.query(ListaCargo).join(
@@ -104,9 +116,6 @@ def datosInforme(cargo_id, frente_id):
             Frente).filter(
             Frente.id == frente_id,
             ListaCargo.cargo_id == cargo_id)
-        #frente = Frente.query.get(frente_id)
-        #listas_frente = frente.listas.join(ListaCargo).join(
-        #    Cargo).filter(Cargo.id == cargo_id).all()
-        return sorted([(str(lista.lista.descripcion), lista.Votos_Lista())
+        return sorted([(str(lista.lista.descripcion), lista.Votos_Lista(secc_num))
                        for lista in listas_frente_cargo],
                       key=lambda fren: fren[1], reverse=True)

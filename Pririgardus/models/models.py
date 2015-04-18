@@ -1,6 +1,6 @@
 # models.models.py
 from flask.ext.sqlalchemy import SQLAlchemy
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from enum import Enum
 
 db = SQLAlchemy()
@@ -65,6 +65,12 @@ class Provincia(db.Model):
             Localidad).join(Departamento).join(Provincia).filter(
             Departamento.provincia == self).all()]
 
+    def getSeccionales(self):
+        seccionales = db.session.query(Seccional).join(
+                Localidad).join(
+                Departamento).filter(Departamento.provincia == self).all()
+        return seccionales
+
 
 class Departamento(db.Model):
 
@@ -98,7 +104,12 @@ class Departamento(db.Model):
             Localidad.departamento == self).all()]
 
     def getFullRepr(self):
-        return "{0} - {1}".format(self.provincia.descripcion, self.descripcion)
+        return "{0} - {1}".format(self.descripcion, self.provincia.descripcion)
+
+    def getSeccionales(self):
+        seccionales = db.session.query(Seccional).join(
+                Localidad).filter(Localidad.departamento == self).all()
+        return seccionales
 
 
 class Localidad(db.Model):
@@ -134,6 +145,9 @@ class Localidad(db.Model):
         return "{0} - {1}".format(
             self.descripcion, self.departamento.provincia.descripcion)
 
+    def getSeccionales(self):
+        return self.seccionales.all()
+
 
 class Seccional(db.Model):
 
@@ -153,7 +167,7 @@ class Seccional(db.Model):
 
     def __repr__(self):
         return str.upper(
-            'SEC.{0} - {1}'.format(self.numero, self.localidad))
+            'SEC.{0} - {1}'.format(self.numero, self.localidad.descripcion))
 
     def getMesas(self):
         return db.session.query(
@@ -329,14 +343,20 @@ class Frente(db.Model):
     def __repr__(self):
         return str.upper(self.descripcion)
 
-    def Votos_Frente(self, cargo_id):
+    def Votos_Frente(self, cargo_id, secc_num=None):
         total = db.session.query(func.sum(
                 VotoListaMesa.votos)).join(
                 ListaCargo).join(
                 Lista).join(
-                Frente).filter(
-                Frente.id == self.id,
-                ListaCargo.cargo_id == cargo_id).scalar()
+                Frente).join(
+                PlanillaMesa).join(
+                Mesa).join(
+                Escuela).join(
+                Circuito).filter(
+                    or_(Circuito.seccional_id == secc_num,
+                        secc_num is None),
+                    Frente.id == self.id,
+                    ListaCargo.cargo_id == cargo_id).scalar()
         return total
 
 
@@ -393,10 +413,18 @@ class ListaCargo(db.Model):
         return str.upper("{0} - {1}".format(
             self.lista.descripcion, self.cargo.descripcion))
 
-    def Votos_Lista(self):
-        total = 0
-        for voto in self.votos:
-            total += voto.votos
+    def Votos_Lista(self, secc_num=None):
+        total = db.session.query(func.sum(
+                VotoListaMesa.votos)).join(
+                ListaCargo).join(
+                Lista).join(
+                PlanillaMesa).join(
+                Mesa).join(
+                Escuela).join(
+                Circuito).filter(
+                    or_(Circuito.seccional_id == secc_num,
+                        secc_num is None),
+                    ListaCargo.id == self.id).scalar()
         return total
 
     def Actualizar_VotoLista(self):

@@ -3,6 +3,7 @@
     var urlDatosGrafico = '{{url_for("getDatosGrafico")}}';
     var cargo_id = '{{cargo_id}}';
     var frente_id = '{{frente_id}}';
+    var secc_num = '{{secc_num}}';
     var tipo_grafico = '{{tipo_grafico}}';
     var datoGraficos;
 </script>
@@ -26,7 +27,7 @@ $(function() {
 });
 
 function getDatosGrafico(){
-        $.getJSON(urlDatosGrafico + "/" + cargo_id+ "/" + frente_id, function (data) {
+        $.getJSON(urlDatosGrafico + "/" + cargo_id + "/" + secc_num + "/" + frente_id, function (data) {
                 datoGraficos = data;
                 if(tipo_grafico == '1'){
                     new Chartkick.ColumnChart("grafico", datoGraficos, {"library": {"title": "", "fontSize": 12}});
