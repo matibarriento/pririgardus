@@ -2,6 +2,7 @@
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy import func, or_
 from enum import Enum
+from helpers import sorted_nicely
 
 db = SQLAlchemy()
 
@@ -69,7 +70,7 @@ class Provincia(db.Model):
         seccionales = db.session.query(Seccional).join(
                 Localidad).join(
                 Departamento).filter(Departamento.provincia == self).all()
-        return seccionales
+        return sorted_nicely(seccionales)
 
 
 class Departamento(db.Model):
@@ -109,7 +110,7 @@ class Departamento(db.Model):
     def getSeccionales(self):
         seccionales = db.session.query(Seccional).join(
                 Localidad).filter(Localidad.departamento == self).all()
-        return seccionales
+        return sorted_nicely(seccionales)
 
 
 class Localidad(db.Model):
@@ -146,7 +147,7 @@ class Localidad(db.Model):
             self.descripcion, self.departamento.provincia.descripcion)
 
     def getSeccionales(self):
-        return self.seccionales.all()
+        return sorted_nicely(self.seccionales.all())
 
 
 class Seccional(db.Model):
