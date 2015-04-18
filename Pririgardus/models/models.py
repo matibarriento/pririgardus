@@ -589,6 +589,7 @@ class PlanillaMesa(db.Model):
     blancos = db.Column(db.Integer, default=0)
     impugnados = db.Column(db.Integer, default=0)
     recurridos = db.Column(db.Integer, default=0)
+    votantes = db.Column(db.Integer, default=0)
     escrutada = db.Column(db.Boolean, default=False)
     mesa_numero = db.Column(db.Integer, db.ForeignKey('Mesa.numero'))
     mesa = db.relationship('Mesa', backref=db.backref(

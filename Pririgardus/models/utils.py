@@ -3,7 +3,9 @@
 import os
 
 VOTO_NAME_PREFIX = "voto-"
-VALIDACION_PLANILLA = ['nulos', 'blancos', 'impugnados', 'recurridos']
+VALIDACION_PLANILLA = ['nulos', 'blancos', 'impugnados',
+                                'recurridos', 'votantes']
+TOTAL_PLANILLA = 'votantes'
 FLASH_ERROR = "alert-danger"
 FLASH_EXITO = "alert-success"
 FLASH_INFO = "alert-info"

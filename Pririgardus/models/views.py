@@ -87,6 +87,7 @@ class CargarPlanilla(Form):
     blancos = IntegerField(label="Votos Blancos", default=0)
     impugnados = IntegerField(label="Votos Impugnados", default=0)
     recurridos = IntegerField(label="Votos Recurridos", default=0)
+    votantes = IntegerField(label="Total Votantes", default=0)
     votos_frentes = FieldList(
         FormField(VotoFrente, default=lambda: AttrDict(lista='')))
 
@@ -103,14 +104,12 @@ class CargarPlanilla(Form):
         self.blancos.data = planilla.blancos
         self.impugnados.data = planilla.impugnados
         self.recurridos.data = planilla.recurridos
+        self.votantes.data = planilla.votantes
         for frente in planilla.getFrentes():
             if (
                 frente in current_user.frentes or
                     len(current_user.frentes) == 0):
                 self.votos_frentes.entries.append(VotoFrente(frente, planilla))
-        # for votolista in planilla.votos.join(Lista).order_by(
-        #         Lista.posicionFrente, Lista.posicionLista).all():
-        #     self.votos_listas.entries.append(VotoLista(votolista))
         self.escrutada = planilla.escrutada
 
 

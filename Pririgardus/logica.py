@@ -5,7 +5,7 @@ from sqlalchemy import func, or_
 from models.models import (
     db, PlanillaMesa, VotoListaMesa, Cargo, Frente, Lista, ListaCargo,
     Mesa, Escuela, Circuito)
-from models.utils import (VOTO_NAME_PREFIX, VALIDACION_PLANILLA,
+from models.utils import (VOTO_NAME_PREFIX, VALIDACION_PLANILLA, TOTAL_PLANILLA,
                           PlanillaEscrutada, PlanillaInvalida)
 
 
@@ -20,6 +20,7 @@ def parsearPlanilla(planilla_id, planilla_form):
     if current_user.otros_votos:
         for item in VALIDACION_PLANILLA:
             setattr(planilla, item, int(pf[item][0]))
+    setattr(planilla, TOTAL_PLANILLA, int(pf[TOTAL_PLANILLA][0]))
     for keys, value in pf.items():
         if keys.__contains__(VOTO_NAME_PREFIX):
             voto_id = keys.replace(VOTO_NAME_PREFIX, '')
@@ -75,31 +76,50 @@ def cantidadMesasExcrutadas(cargo_id, secc_num):
 
 
 def totalVotosCargo(cargo_id, frente_id, secc_num):
-    if frente_id == 0:
-        total = 0
-        total += db.session.query(func.sum(VotoListaMesa.votos)).join(
-            PlanillaMesa).join(
-            Mesa).join(
-            Escuela).join(
-            Circuito).filter(or_(Circuito.seccional_id == secc_num,
-                                 secc_num is None),
-                             PlanillaMesa.cargo_id == cargo_id).scalar()
-        total += db.session.query(
-            func.sum(PlanillaMesa.blancos) +
-            func.sum(PlanillaMesa.recurridos) +
-            func.sum(PlanillaMesa.nulos) +
-            func.sum(PlanillaMesa.impugnados)
-        ).join(
-            Mesa).join(
-            Escuela).join(
-            Circuito).filter(or_(Circuito.seccional_id == secc_num,
-                                 secc_num is None),
-                             PlanillaMesa.cargo_id == cargo_id).scalar()
 
-        return total
-    else:
-        frente = Frente.query.get(frente_id)
-        return frente.Votos_Frente(cargo_id, secc_num)
+    total = 0
+    totales = db.session.query(
+        PlanillaMesa.votantes).join(
+        VotoListaMesa).join(
+        ListaCargo).join(
+        Lista).join(
+        Mesa).join(
+        Escuela).join(
+        Circuito).filter(or_(Circuito.seccional_id == secc_num,
+                             secc_num is None),
+                         or_(Lista.frente_id == frente_id,
+                             frente_id == 0),
+                         PlanillaMesa.escrutada,
+                         ListaCargo.cargo_id == cargo_id).group_by(
+        PlanillaMesa.id).all()
+    for tot in totales:
+        total += tot[0]
+    return total
+    # if frente_id == 0:
+    #     total = 0
+    #     total += db.session.query(func.sum(VotoListaMesa.votos)).join(
+    #         PlanillaMesa).join(
+    #         Mesa).join(
+    #         Escuela).join(
+    #         Circuito).filter(or_(Circuito.seccional_id == secc_num,
+    #                              secc_num is None),
+    #                          PlanillaMesa.cargo_id == cargo_id).scalar()
+    #     total += db.session.query(
+    #         func.sum(PlanillaMesa.blancos) +
+    #         func.sum(PlanillaMesa.recurridos) +
+    #         func.sum(PlanillaMesa.nulos) +
+    #         func.sum(PlanillaMesa.impugnados)
+    #     ).join(
+    #         Mesa).join(
+    #         Escuela).join(
+    #         Circuito).filter(or_(Circuito.seccional_id == secc_num,
+    #                              secc_num is None),
+    #                          PlanillaMesa.cargo_id == cargo_id).scalar()
+
+    #     return total
+    # else:
+    #     frente = Frente.query.get(frente_id)
+    #     return frente.Votos_Frente(cargo_id, secc_num)
 
 
 def datosInforme(cargo_id, secc_num, frente_id):
