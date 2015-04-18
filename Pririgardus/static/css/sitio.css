@@ -72,3 +72,8 @@ header .head {
 .dato-badge{
     margin: 0 1em 0 1em;
 }
+
+.imagenFrente{
+    max-height: 100px !important;
+    width: 100% !important;
+}
